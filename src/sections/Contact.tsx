@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Mail, Phone, MapPin, Github, Send } from "lucide-react";
+import { Mail, Phone, MapPin, Github, Send, Linkedin } from "lucide-react";
 
 import { styles } from "../styles";
 import SectionWrapper from "../hoc/SectionWrapper";
@@ -42,10 +42,11 @@ const Contact = () => {
           {/* Contact info */}
           <div className="flex flex-col gap-3 mb-6">
             {[
-              { icon: <Mail size={16} className="text-[#915EFF]" />, label: "krishvadsak.co23d2@scet.ac.in", href: "mailto:krishvadsak.co23d2@scet.ac.in" },
+              { icon: <Mail size={16} className="text-[#915EFF]" />, label: "krishvadsak234@gmail.com", href: "mailto:krishvadsak234@gmail.com" },
               { icon: <Phone size={16} className="text-[#915EFF]" />, label: "+91 6354905340", href: "tel:+916354905340" },
               { icon: <MapPin size={16} className="text-[#915EFF]" />, label: "Surat, Gujarat, India", href: undefined },
-              { icon: <Github size={16} className="text-[#915EFF]" />, label: "github.com/krishvadsak", href: "https://github.com/krishvadsak" },
+              { icon: <Github size={16} className="text-[#915EFF]" />, label: "github.com/krish-vadsak45", href: "https://github.com/krish-vadsak45" },
+              { icon: <Linkedin size={16} className="text-[#915EFF]" />, label: "linkedin.com/in/krish-vadsak-a5bab427b", href: "https://www.linkedin.com/in/krish-vadsak-a5bab427b" },
             ].map((item) =>
               item.href ? (
                 <a

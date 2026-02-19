@@ -11,7 +11,11 @@ export const fadeUp: Variants = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { type: "tween", duration: 0.6, ease: "easeOut" },
+    transition: { 
+      type: "tween", 
+      duration: 0.8, 
+      ease: [0.25, 1, 0.5, 1] // Custom "out-expo" for smooth deceleration
+    },
   },
 };
 
@@ -19,7 +23,11 @@ export const fadeIn: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { type: "tween", duration: 0.6, ease: "easeOut" },
+    transition: { 
+      type: "tween", 
+      duration: 0.8, 
+      ease: [0.25, 1, 0.5, 1]
+    },
   },
 };
 
@@ -28,7 +36,11 @@ export const slideLeft: Variants = {
   show: {
     opacity: 1,
     x: 0,
-    transition: { type: "tween", duration: 0.7, ease: "easeOut" },
+    transition: { 
+      type: "tween", 
+      duration: 0.9, 
+      ease: [0.25, 1, 0.5, 1]
+    },
   },
 };
 
@@ -37,7 +49,11 @@ export const slideRight: Variants = {
   show: {
     opacity: 1,
     x: 0,
-    transition: { type: "tween", duration: 0.7, ease: "easeOut" },
+    transition: { 
+      type: "tween", 
+      duration: 0.9, 
+      ease: [0.25, 1, 0.5, 1]
+    },
   },
 };
 
@@ -47,6 +63,11 @@ export const cardVariant = (index: number): Variants => ({
   show: {
     opacity: 1,
     y: 0,
-    transition: { type: "tween", delay: index * 0.12, duration: 0.5, ease: "easeOut" },
+    transition: { 
+      type: "tween", 
+      delay: index * 0.1, 
+      duration: 0.7, 
+      ease: [0.25, 1, 0.5, 1] 
+    },
   },
 });

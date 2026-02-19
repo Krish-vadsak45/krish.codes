@@ -39,6 +39,7 @@ const Navbar = () => {
         <Link
           to="/"
           className="flex items-center gap-2 group"
+          aria-label="Krish Vadsak - Back to home"
           onClick={() => {
             setActive("");
             window.scrollTo(0, 0);
@@ -75,12 +76,14 @@ const Navbar = () => {
 
         {/* Mobile nav */}
         <div className="sm:hidden flex flex-1 justify-end items-center">
-          <div
+          <button
             className="w-[28px] h-[28px] object-contain cursor-pointer"
             onClick={() => setToggle(!toggle)}
+            aria-label={toggle ? "Close menu" : "Open menu"}
+            aria-expanded={toggle}
           >
             {toggle ? <X className="text-white" /> : <Menu className="text-white" />}
-          </div>
+          </button>
 
           <div
             className={`${

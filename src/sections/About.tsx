@@ -1,38 +1,8 @@
-import { Tilt } from "react-tilt";
 import { motion } from "framer-motion";
-import { Code, Database, Smartphone, Lightbulb } from "lucide-react";
 
 import { styles } from "../styles";
-import { services } from "../constants";
 import SectionWrapper from "../hoc/SectionWrapper";
-import { fadeUp, fadeIn, cardVariant } from "../utils/variants";
-
-const iconMap: Record<string, React.ReactNode> = {
-  web: <Code size={48} className="text-white" />,
-  mobile: <Smartphone size={48} className="text-white" />,
-  backend: <Database size={48} className="text-white" />,
-  creator: <Lightbulb size={48} className="text-white" />,
-};
-
-interface ServiceCardProps {
-  index: number;
-  title: string;
-  icon: string;
-}
-
-const ServiceCard = ({ index, title, icon }: ServiceCardProps) => (
-  <Tilt className="xs:w-[250px] w-full">
-    <motion.div
-      variants={cardVariant(index)}
-      className="w-full green-pink-gradient p-[1px] rounded-[20px] shadow-card"
-    >
-      <div className="bg-tertiary rounded-[20px] py-5 px-12 min-h-[280px] flex justify-evenly items-center flex-col hover:bg-[#1d1836] transition-colors duration-300">
-        {iconMap[icon]}
-        <h3 className="text-white text-[20px] font-bold text-center">{title}</h3>
-      </div>
-    </motion.div>
-  </Tilt>
-);
+import { fadeUp, fadeIn } from "../utils/variants";
 
 const About = () => {
   return (
@@ -99,13 +69,6 @@ const About = () => {
           </motion.div>
         </div>
       </motion.div>
-
-      {/* Service Cards */}
-      <div className="mt-20 flex flex-wrap gap-10 justify-center">
-        {services.map((service, index) => (
-          <ServiceCard key={service.title} index={index} {...service} />
-        ))}
-      </div>
     </>
   );
 };

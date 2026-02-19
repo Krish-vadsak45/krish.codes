@@ -37,8 +37,13 @@ const StarsCanvas = () => {
     <div className="w-full h-auto absolute inset-0 z-[-1]">
       <Canvas
         frameloop="always"
+        dpr={[1, 2]}
         camera={{ position: [0, 0, 1] }}
-        gl={{ antialias: false, alpha: true }}
+        gl={{ 
+          antialias: false, 
+          alpha: true,
+          powerPreference: "high-performance"
+        }}
       >
         <Suspense fallback={null}>
           <Stars />

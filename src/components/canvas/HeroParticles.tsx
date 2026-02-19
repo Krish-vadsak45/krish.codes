@@ -63,8 +63,13 @@ const HeroParticles = () => {
   return (
     <Canvas
       frameloop="always"
+      dpr={[1, 2]}
       camera={{ position: [0, 0, 5], fov: 75 }}
-      gl={{ antialias: false, alpha: true }}
+      gl={{ 
+        antialias: false, 
+        alpha: true,
+        powerPreference: "high-performance"
+      }}
       style={{ background: "transparent" }}
     >
       <ParticleField />
