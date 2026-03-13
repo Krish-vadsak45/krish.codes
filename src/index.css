@@ -6,6 +6,21 @@
   50%       { opacity: 0; }
 }
 
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%       { opacity: 0.55; transform: scale(1.08); }
+}
+
 /* ===== Gradients ===== */
 .green-pink-gradient {
   background: linear-gradient(90.13deg, #00cea8 1.9%, #bf61ff 97.5%);
@@ -58,7 +73,6 @@ body {
   min-width: 320px;
   min-height: 100vh;
   overflow-x: hidden;
-  /* REMOVED: place-items: center — this was breaking full-page layout */
 }
 
 a {
@@ -71,23 +85,24 @@ a:hover {
   color: #7a4fd6;
 }
 
-/* ===== Scrollbar ===== */
-::-webkit-scrollbar {
-  width: 5px;
-}
+/* ===== Scrollbar (global) ===== */
+::-webkit-scrollbar       { width: 5px; }
+::-webkit-scrollbar-track { background: #050816; }
+::-webkit-scrollbar-thumb { background: #915EFF; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #7a4fd6; }
 
-::-webkit-scrollbar-track {
-  background: #050816;
-}
+/* ===== Custom scrollbar class (for modals, inner containers) ===== */
+.custom-scrollbar::-webkit-scrollbar       { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #915EFF66; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #915EFF; }
 
-::-webkit-scrollbar-thumb {
-  background: #915EFF;
-  border-radius: 3px;
+/* ===== Hide scrollbar but keep scroll ===== */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-
-::-webkit-scrollbar-thumb:hover {
-  background: #7a4fd6;
-}
+.scrollbar-none::-webkit-scrollbar { display: none; }
 
 /* ===== Hash span anchor offset ===== */
 .hash-span {
@@ -115,12 +130,54 @@ a:hover {
   -webkit-text-fill-color: transparent;
 }
 
+.purple-text-gradient {
+  background: -webkit-linear-gradient(#915EFF, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ===== Shimmer text ===== */
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #915EFF 0%,
+    #c084fc 40%,
+    #ffffff 50%,
+    #c084fc 60%,
+    #915EFF 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ===== Ambient glow blobs ===== */
+.glow-blob {
+  pointer-events: none;
+  filter: blur(80px);
+  border-radius: 9999px;
+  animation: glow-pulse 4s ease-in-out infinite;
+}
+
+/* ===== Section divider ===== */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #915EFF33, transparent);
+  margin: 0 auto;
+  width: 100%;
+  max-width: 80rem;
+}
+
+/* ===== Floating animation ===== */
+.float {
+  animation: float 4s ease-in-out infinite;
+}
+
 /* ===== Card hover ===== */
 .card-img_hover {
   z-index: 10;
 }
 
-/* ===== Smooth section transitions ===== */
-section {
-  will-change: opacity, transform;
-}
+/* will-change is intentionally NOT applied globally.
+   Apply it only to specific animated elements via Tailwind's will-change-* utilities. */

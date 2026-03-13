@@ -2,8 +2,7 @@ import { useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-const ParticleField = () => {
-  const count = 3000;
+const ParticleField = ({ count }: { count: number }) => {
   const mesh = useRef<THREE.Points>(null!);
 
   const [positions, colors] = useMemo(() => {
@@ -14,14 +13,13 @@ const ParticleField = () => {
       pos[i * 3 + 1] = (Math.random() - 0.5) * 14;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 14;
 
-      // Alternate between purple and pink tones
       const t = Math.random();
-      col[i * 3 + 0] = 0.4 + t * 0.4;   // R
-      col[i * 3 + 1] = 0.1 + t * 0.2;   // G
-      col[i * 3 + 2] = 0.8 + t * 0.2;   // B
+      col[i * 3 + 0] = 0.4 + t * 0.4; // R
+      col[i * 3 + 1] = 0.1 + t * 0.2; // G
+      col[i * 3 + 2] = 0.8 + t * 0.2; // B
     }
     return [pos, col];
-  }, []);
+  }, [count]);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
@@ -60,19 +58,22 @@ const ParticleField = () => {
 };
 
 const HeroParticles = () => {
+  // Fewer particles on low-end / small screens for better frame rate
+  const count = typeof window !== "undefined" && window.innerWidth < 768 ? 1200 : 3000;
+
   return (
     <Canvas
       frameloop="always"
-      dpr={[1, 2]}
+      dpr={[1, 1.5]}
       camera={{ position: [0, 0, 5], fov: 75 }}
-      gl={{ 
-        antialias: false, 
+      gl={{
+        antialias: false,
         alpha: true,
-        powerPreference: "high-performance"
+        powerPreference: "high-performance",
       }}
       style={{ background: "transparent" }}
     >
-      <ParticleField />
+      <ParticleField count={count} />
     </Canvas>
   );
 };

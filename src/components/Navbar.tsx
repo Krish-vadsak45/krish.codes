@@ -12,17 +12,29 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      if (scrollTop > 100) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => setScrolled(window.scrollY > 100);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Track active section via IntersectionObserver
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+
+    navLinks.forEach(({ id, title }) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) setActive(title);
+        },
+        { threshold: 0.4 }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+
+    return () => observers.forEach((obs) => obs.disconnect());
   }, []);
 
   return (
@@ -31,7 +43,7 @@ const Navbar = () => {
         styles.paddingX,
         "w-full flex items-center py-5 fixed top-0 z-20 transition-all duration-300",
         scrolled
-          ? "bg-primary/95 backdrop-blur-md shadow-lg shadow-black/20"
+          ? "bg-primary/95 backdrop-blur-md shadow-lg shadow-black/20 border-b border-white/5"
           : "bg-transparent"
       )}
     >
@@ -55,23 +67,32 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop nav */}
-        <ul className="list-none hidden sm:flex flex-row gap-10">
+        <ul className="list-none hidden sm:flex flex-row gap-8 items-center">
           {navLinks.map((nav) => (
             <li
               key={nav.id}
               className={`${
                 active === nav.title ? "text-white" : "text-secondary"
-              } hover:text-white text-[18px] font-medium cursor-pointer transition-colors duration-200 relative group`}
+              } hover:text-white text-[17px] font-medium cursor-pointer transition-colors duration-200 relative group`}
               onClick={() => setActive(nav.title)}
             >
               <a href={`#${nav.id}`}>{nav.title}</a>
               <span
-                className={`absolute -bottom-1 left-0 h-0.5 bg-[#915EFF] transition-all duration-300 ${
-                  active === nav.title ? "w-full" : "w-0 group-hover:w-full"
+                className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-gradient-to-r from-[#915EFF] to-purple-400 transition-all duration-300 ${
+                  active === nav.title ? "w-full opacity-100" : "w-0 opacity-0 group-hover:w-full group-hover:opacity-100"
                 }`}
               />
             </li>
           ))}
+          <li>
+            <a
+              href="#contact"
+              onClick={() => setActive("Contact")}
+              className="px-5 py-2 bg-[#915EFF] text-white text-[15px] font-bold rounded-xl hover:bg-[#7a4fd6] transition-all duration-300 hover:scale-105 shadow-md shadow-[#915EFF]/25"
+            >
+              Hire Me
+            </a>
+          </li>
         </ul>
 
         {/* Mobile nav */}
@@ -88,7 +109,7 @@ const Navbar = () => {
           <div
             className={`${
               !toggle ? "hidden" : "flex"
-            } p-6 black-gradient absolute top-20 right-0 mx-4 my-2 min-w-[160px] z-10 rounded-xl border border-white/10`}
+            } p-6 black-gradient absolute top-20 right-0 mx-4 my-2 min-w-[180px] z-10 rounded-xl border border-white/10`}
           >
             <ul className="list-none flex justify-end items-start flex-1 flex-col gap-4">
               {navLinks.map((nav) => (
@@ -105,6 +126,15 @@ const Navbar = () => {
                   <a href={`#${nav.id}`}>{nav.title}</a>
                 </li>
               ))}
+              <li className="mt-2 w-full">
+                <a
+                  href="#contact"
+                  onClick={() => { setToggle(false); setActive("Contact"); }}
+                  className="block text-center w-full px-4 py-2 bg-[#915EFF] text-white text-[14px] font-bold rounded-xl hover:bg-[#7a4fd6] transition-all duration-300"
+                >
+                  Hire Me
+                </a>
+              </li>
             </ul>
           </div>
         </div>
