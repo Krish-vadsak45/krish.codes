@@ -1,9 +1,20 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, useCallback } from "react";
 import { Tilt } from "react-tilt";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import {
-  Github, ExternalLink, Calendar, X, Rocket, Zap, Brain,
-  Shield, ArrowRight, Layers, Quote, ChevronRight,
+  Github,
+  ExternalLink,
+  Calendar,
+  X,
+  Rocket,
+  Zap,
+  Brain,
+  Shield,
+  ArrowRight,
+  Layers,
+  Quote,
+  ChevronRight,
 } from "lucide-react";
 
 import { styles } from "../styles";
@@ -11,57 +22,101 @@ import { projects } from "../constants";
 import SectionWrapper from "../hoc/SectionWrapper";
 import { fadeUp, fadeIn, cardVariant } from "../utils/variants";
 
+/* ─── Types ────────────────────────────────────────────────────────── */
+interface Tag {
+  name: string;
+  color: string;
+}
+
+interface Project {
+  name: string;
+  description: string;
+  problem_statement: string;
+  role: string;
+  tech_stack: string[];
+  architecture_flow: string;
+  key_decisions: string[];
+  impact: string[];
+  tags: Tag[];
+  gradient: string;
+  emoji: string;
+  period: string;
+  source_code_link: string;
+  live_link?: string;
+  portfolio_summary?: string;
+}
+
 /* ─── Animation variants ──────────────────────────────────────────── */
-const backdropVariants = {
+const backdropVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.25 } },
-  exit:    { opacity: 0, transition: { duration: 0.2, delay: 0.05 } },
+  exit: { opacity: 0, transition: { duration: 0.2, delay: 0.05 } },
 };
 
-const modalVariants = {
-  hidden:  { opacity: 0, y: 60, scale: 0.94 },
+const modalVariants: Variants = {
+  hidden: { opacity: 0, y: 60, scale: 0.94 },
   visible: {
-    opacity: 1, y: 0, scale: 1,
+    opacity: 1,
+    y: 0,
+    scale: 1,
     transition: { type: "spring", damping: 28, stiffness: 320, mass: 0.8 },
   },
   exit: {
-    opacity: 0, y: 40, scale: 0.95,
+    opacity: 0,
+    y: 40,
+    scale: 0.95,
     transition: { duration: 0.18, ease: [0.4, 0, 1, 1] },
   },
 };
 
-const tabContentVariants = {
-  hidden:  { opacity: 0, x: 16 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.22, ease: [0.25, 1, 0.5, 1] } },
-  exit:    { opacity: 0, x: -12, transition: { duration: 0.15 } },
+const tabContentVariants: Variants = {
+  hidden: { opacity: 0, x: 16 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.22, ease: [0.25, 1, 0.5, 1] },
+  },
+  exit: { opacity: 0, x: -12, transition: { duration: 0.15 } },
 };
 
-const staggerList = {
+const staggerList: Variants = {
   visible: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
 };
 
-const listItem = {
-  hidden:  { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] } },
+const listItem: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] },
+  },
 };
 
 /* ─── Tab definitions ─────────────────────────────────────────────── */
 const TABS = [
-  { id: "overview",      label: "Overview",      icon: Brain },
-  { id: "architecture",  label: "Architecture",  icon: Layers },
-  { id: "decisions",     label: "Engineering",   icon: Rocket },
-  { id: "impact",        label: "Impact",        icon: Zap },
+  { id: "overview", label: "Overview", icon: Brain },
+  { id: "architecture", label: "Architecture", icon: Layers },
+  { id: "decisions", label: "Engineering", icon: Rocket },
+  { id: "impact", label: "Impact", icon: Zap },
 ] as const;
 
-type TabId = typeof TABS[number]["id"];
+type TabId = (typeof TABS)[number]["id"];
 
 /* ─── Modal component ─────────────────────────────────────────────── */
-const CaseStudyModal = ({ project, onClose }: { project: any; onClose: () => void }) => {
+const CaseStudyModal = ({
+  project,
+  onClose,
+}: {
+  project: Project;
+  onClose: () => void;
+}) => {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
 
   /* Keyboard + scroll-lock */
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
@@ -71,7 +126,9 @@ const CaseStudyModal = ({ project, onClose }: { project: any; onClose: () => voi
   }, [onClose]);
 
   /* Reset tab when project changes */
-  useEffect(() => { setActiveTab("overview"); }, [project?.name]);
+  useEffect(() => {
+    setActiveTab("overview");
+  }, [project?.name]);
 
   const architectureSteps: string[] = project.architecture_flow.split(" -> ");
 
@@ -96,7 +153,9 @@ const CaseStudyModal = ({ project, onClose }: { project: any; onClose: () => voi
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Gradient banner header ─────────────────────────── */}
-        <div className={`relative shrink-0 h-44 sm:h-56 bg-gradient-to-br ${project.gradient} overflow-hidden`}>
+        <div
+          className={`relative shrink-0 h-44 sm:h-56 bg-gradient-to-br ${project.gradient} overflow-hidden`}
+        >
           {/* Decorative blobs */}
           <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/10 blur-2xl" />
           <div className="absolute -bottom-4 -left-4 w-32 h-32 rounded-full bg-black/20 blur-xl" />
@@ -116,7 +175,11 @@ const CaseStudyModal = ({ project, onClose }: { project: any; onClose: () => voi
           {/* Project identity */}
           <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 bg-gradient-to-t from-black/60 to-transparent">
             <div className="flex items-end gap-4">
-              <span className="text-5xl sm:text-6xl drop-shadow-2xl leading-none" role="img" aria-hidden="true">
+              <span
+                className="text-5xl sm:text-6xl drop-shadow-2xl leading-none"
+                role="img"
+                aria-hidden="true"
+              >
                 {project.emoji}
               </span>
               <div className="mb-0.5">
@@ -128,9 +191,13 @@ const CaseStudyModal = ({ project, onClose }: { project: any; onClose: () => voi
                 </h2>
                 <div className="flex items-center gap-2 mt-1">
                   <Calendar size={12} className="text-white/60" />
-                  <span className="text-white/60 text-xs font-medium">{project.period}</span>
+                  <span className="text-white/60 text-xs font-medium">
+                    {project.period}
+                  </span>
                   <span className="text-white/30 text-xs">·</span>
-                  <span className="text-white/60 text-xs font-medium">{project.role}</span>
+                  <span className="text-white/60 text-xs font-medium">
+                    {project.role}
+                  </span>
                 </div>
               </div>
             </div>
@@ -167,7 +234,10 @@ const CaseStudyModal = ({ project, onClose }: { project: any; onClose: () => voi
         </div>
 
         {/* ── Scrollable tab content ─────────────────────────── */}
-        <div className="flex-1 overflow-y-auto overscroll-contain" style={{ scrollbarWidth: "thin", scrollbarColor: "#915EFF #060a1a" }}>
+        <div
+          className="flex-1 overflow-y-auto overscroll-contain"
+          style={{ scrollbarWidth: "thin", scrollbarColor: "#915EFF #060a1a" }}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -177,24 +247,38 @@ const CaseStudyModal = ({ project, onClose }: { project: any; onClose: () => voi
               exit="exit"
               className="p-5 sm:p-8"
             >
-
               {/* ── OVERVIEW tab ────────────────────────────── */}
               {activeTab === "overview" && (
-                <motion.div variants={staggerList} initial="hidden" animate="visible" className="space-y-6">
+                <motion.div
+                  variants={staggerList}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-6"
+                >
                   {/* Problem */}
-                  <motion.div variants={listItem} className="bg-[#915EFF]/5 border border-[#915EFF]/15 rounded-2xl p-5">
+                  <motion.div
+                    variants={listItem}
+                    className="bg-[#915EFF]/5 border border-[#915EFF]/15 rounded-2xl p-5"
+                  >
                     <p className="text-[#915EFF] font-bold text-[11px] uppercase tracking-widest mb-3 flex items-center gap-2">
                       <Brain size={12} /> The Problem
                     </p>
-                    <p className="text-secondary text-sm leading-relaxed">{project.problem_statement}</p>
+                    <p className="text-secondary text-sm leading-relaxed">
+                      {project.problem_statement}
+                    </p>
                   </motion.div>
 
                   {/* Role badge */}
-                  <motion.div variants={listItem} className="flex items-center gap-3">
+                  <motion.div
+                    variants={listItem}
+                    className="flex items-center gap-3"
+                  >
                     <span className="px-4 py-1.5 bg-[#1d1836] border border-white/10 text-white text-xs font-bold rounded-full">
                       {project.role}
                     </span>
-                    <span className="text-[#aaa6c3] text-xs">{project.period}</span>
+                    <span className="text-[#aaa6c3] text-xs">
+                      {project.period}
+                    </span>
                   </motion.div>
 
                   {/* Tech stack */}
@@ -216,7 +300,10 @@ const CaseStudyModal = ({ project, onClose }: { project: any; onClose: () => voi
 
                   {/* TL;DR */}
                   {project.portfolio_summary && (
-                    <motion.div variants={listItem} className="bg-white/3 border border-white/8 rounded-2xl p-5">
+                    <motion.div
+                      variants={listItem}
+                      className="bg-white/3 border border-white/8 rounded-2xl p-5"
+                    >
                       <p className="text-[#915EFF] font-bold text-[11px] uppercase tracking-widest mb-3 flex items-center gap-2">
                         <Quote size={12} /> Engineering TL;DR
                       </p>
@@ -230,9 +317,18 @@ const CaseStudyModal = ({ project, onClose }: { project: any; onClose: () => voi
 
               {/* ── ARCHITECTURE tab ─────────────────────────── */}
               {activeTab === "architecture" && (
-                <motion.div variants={staggerList} initial="hidden" animate="visible" className="space-y-5">
-                  <motion.p variants={listItem} className="text-secondary text-sm leading-relaxed">
-                    Step-by-step data and control flow through the system — from user action to infrastructure response.
+                <motion.div
+                  variants={staggerList}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-5"
+                >
+                  <motion.p
+                    variants={listItem}
+                    className="text-secondary text-sm leading-relaxed"
+                  >
+                    Step-by-step data and control flow through the system — from
+                    user action to infrastructure response.
                   </motion.p>
                   <motion.div variants={listItem} className="space-y-2">
                     {architectureSteps.map((step: string, i: number) => (
@@ -248,12 +344,17 @@ const CaseStudyModal = ({ project, onClose }: { project: any; onClose: () => voi
 
                         {/* Step box */}
                         <div className="flex-1 bg-[#0d1130] border border-white/8 rounded-xl px-4 py-3 group-hover:border-[#915EFF]/30 transition-colors duration-200">
-                          <p className="text-white text-sm font-medium leading-relaxed">{step}</p>
+                          <p className="text-white text-sm font-medium leading-relaxed">
+                            {step}
+                          </p>
                         </div>
 
                         {/* Arrow connector */}
                         {i < architectureSteps.length - 1 && (
-                          <div className="absolute left-[13px] mt-8 w-px h-2 bg-[#915EFF]/30" aria-hidden="true" />
+                          <div
+                            className="absolute left-[13px] mt-8 w-px h-2 bg-[#915EFF]/30"
+                            aria-hidden="true"
+                          />
                         )}
                       </motion.div>
                     ))}
@@ -263,17 +364,24 @@ const CaseStudyModal = ({ project, onClose }: { project: any; onClose: () => voi
 
               {/* ── DECISIONS tab ────────────────────────────── */}
               {activeTab === "decisions" && (
-                <motion.div variants={staggerList} initial="hidden" animate="visible" className="space-y-4">
+                <motion.div
+                  variants={staggerList}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-4"
+                >
                   {project.key_decisions.map((decision: string, i: number) => (
                     <motion.div
-                      key={i}
+                      key={decision}
                       variants={listItem}
                       className="flex gap-4 p-4 bg-[#0d1130] border border-white/6 rounded-2xl hover:border-[#915EFF]/25 transition-colors duration-300 group"
                     >
                       <div className="shrink-0 w-7 h-7 rounded-full bg-[#915EFF]/15 border border-[#915EFF]/30 flex items-center justify-center text-[#915EFF] text-[11px] font-black mt-0.5 group-hover:bg-[#915EFF] group-hover:text-white transition-all duration-300">
                         {i + 1}
                       </div>
-                      <p className="text-secondary text-sm leading-relaxed">{decision}</p>
+                      <p className="text-secondary text-sm leading-relaxed">
+                        {decision}
+                      </p>
                     </motion.div>
                   ))}
                 </motion.div>
@@ -281,22 +389,28 @@ const CaseStudyModal = ({ project, onClose }: { project: any; onClose: () => voi
 
               {/* ── IMPACT tab ───────────────────────────────── */}
               {activeTab === "impact" && (
-                <motion.div variants={staggerList} initial="hidden" animate="visible" className="space-y-4">
+                <motion.div
+                  variants={staggerList}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-4"
+                >
                   {project.impact.map((metric: string, i: number) => (
                     <motion.div
-                      key={i}
+                      key={metric}
                       variants={listItem}
                       className="flex items-start gap-4 p-4 bg-emerald-500/5 border border-emerald-500/12 rounded-2xl hover:border-emerald-500/30 transition-colors duration-300"
                     >
                       <div className="shrink-0 w-7 h-7 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mt-0.5">
                         <div className="w-2 h-2 rounded-full bg-emerald-400" />
                       </div>
-                      <p className="text-secondary text-sm leading-relaxed font-medium">{metric}</p>
+                      <p className="text-secondary text-sm leading-relaxed font-medium">
+                        {metric}
+                      </p>
                     </motion.div>
                   ))}
                 </motion.div>
               )}
-
             </motion.div>
           </AnimatePresence>
         </div>
@@ -349,6 +463,17 @@ const CaseStudyModal = ({ project, onClose }: { project: any; onClose: () => voi
 };
 
 /* ─── Project card ────────────────────────────────────────────────── */
+interface ProjectCardProps {
+  index: number;
+  name: string;
+  description: string;
+  tags: Tag[];
+  gradient: string;
+  emoji: string;
+  period: string;
+  onOpenCaseStudy: () => void;
+}
+
 const ProjectCard = ({
   index,
   name,
@@ -358,19 +483,17 @@ const ProjectCard = ({
   emoji,
   period,
   onOpenCaseStudy,
-}: any) => (
+}: ProjectCardProps) => (
   <motion.div variants={cardVariant(index)}>
     <Tilt
       options={{ max: 12, scale: 1.02, speed: 400 }}
       className="bg-tertiary p-5 rounded-3xl sm:w-[370px] w-full border border-white/5 hover:border-[#915EFF]/40 transition-all duration-300 group flex flex-col h-full will-change-transform"
     >
       {/* Visual banner */}
-      <div
-        className={`relative w-full h-[200px] bg-gradient-to-br ${gradient} rounded-2xl flex items-center justify-center overflow-hidden cursor-pointer shadow-inner`}
+      <button
+        className={`relative w-full h-50 bg-linear-to-br ${gradient} rounded-2xl flex items-center justify-center overflow-hidden cursor-pointer shadow-inner`}
         onClick={onOpenCaseStudy}
-        role="button"
         aria-label={`Open case study for ${name}`}
-        tabIndex={0}
         onKeyDown={(e) => e.key === "Enter" && onOpenCaseStudy()}
       >
         <div className="absolute top-3 left-3 w-20 h-20 rounded-full bg-white/8 blur-xl" />
@@ -384,12 +507,12 @@ const ProjectCard = ({
         </span>
 
         {/* Hover overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-end pb-6">
+        <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-end pb-6">
           <span className="flex items-center gap-2 text-white font-bold text-sm px-5 py-2 rounded-full bg-white/15 border border-white/25 backdrop-blur-sm">
             Read Case Study <ChevronRight size={14} />
           </span>
         </div>
-      </div>
+      </button>
 
       {/* Content */}
       <div className="mt-5 flex-1">
@@ -400,12 +523,14 @@ const ProjectCard = ({
         <h3 className="text-white font-bold text-[21px] leading-tight group-hover:text-[#915EFF] transition-colors duration-200">
           {name}
         </h3>
-        <p className="mt-2.5 text-secondary text-[13.5px] leading-[21px] line-clamp-3">{description}</p>
+        <p className="mt-2.5 text-secondary text-[13.5px] leading-[21px] line-clamp-3">
+          {description}
+        </p>
       </div>
 
       {/* Tags */}
       <div className="mt-4 flex flex-wrap gap-2">
-        {tags.map((tag: any) => (
+        {tags.map((tag) => (
           <span
             key={`${name}-${tag.name}`}
             className={`text-[11px] px-3 py-1 rounded-full bg-white/5 border border-white/8 ${tag.color} font-semibold`}
@@ -430,7 +555,7 @@ const ProjectCard = ({
 
 /* ─── Section ─────────────────────────────────────────────────────── */
 const Works = () => {
-  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const handleClose = useCallback(() => setSelectedProject(null), []);
 
   return (
@@ -444,14 +569,15 @@ const Works = () => {
         variants={fadeIn}
         className="mt-3 text-secondary text-[17px] max-w-3xl leading-[30px]"
       >
-        I don't just build UI — I solve complex engineering challenges. Below are case studies
-        detailing the architecture, key decisions, and measurable impact of my flagship applications.
+        I don't just build UI — I solve complex engineering challenges. Below
+        are case studies detailing the architecture, key decisions, and
+        measurable impact of my flagship applications.
       </motion.p>
 
       <div className="mt-20 flex flex-wrap gap-7 justify-center">
         {projects.map((project, index) => (
           <ProjectCard
-            key={`project-${index}`}
+            key={project.name}
             index={index}
             {...project}
             onOpenCaseStudy={() => setSelectedProject(project)}
@@ -471,13 +597,18 @@ const Works = () => {
         <div className="relative bg-tertiary rounded-3xl p-8 border border-white/5 flex flex-col md:flex-row items-center gap-8 text-left">
           <div className="text-6xl bg-black/20 p-6 rounded-2xl">⚡</div>
           <div className="flex-1">
-            <h3 className="text-white font-bold text-[24px]">Algorithmic Mastery</h3>
+            <h3 className="text-white font-bold text-[24px]">
+              Algorithmic Mastery
+            </h3>
             <p className="text-secondary text-[16px] mt-2 leading-[28px]">
               Solved{" "}
-              <span className="text-[#915EFF] font-black text-[22px]">200+</span>{" "}
-              problems on LeetCode using C++, focusing on optimization and algorithmic
-              efficiency. This foundation allows me to write high-performance backend logic
-              and complex frontend data transformations.
+              <span className="text-[#915EFF] font-black text-[22px]">
+                200+
+              </span>{" "}
+              problems on LeetCode using C++, focusing on optimization and
+              algorithmic efficiency. This foundation allows me to write
+              high-performance backend logic and complex frontend data
+              transformations.
             </p>
           </div>
           <a
