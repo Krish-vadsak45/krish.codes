@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Tilt } from "react-tilt";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import {
-  Github,
+  Github as GithubIcon,
   ExternalLink,
   Calendar,
   X,
@@ -138,7 +138,7 @@ const CaseStudyModal = ({
       initial="hidden"
       animate="visible"
       exit="exit"
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/75 backdrop-blur-md"
+      className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/75 backdrop-blur-md"
       onClick={onClose}
     >
       <motion.div
@@ -154,7 +154,7 @@ const CaseStudyModal = ({
       >
         {/* ── Gradient banner header ─────────────────────────── */}
         <div
-          className={`relative shrink-0 h-44 sm:h-56 bg-gradient-to-br ${project.gradient} overflow-hidden`}
+          className={`relative shrink-0 h-44 sm:h-56 bg-linear-to-br ${project.gradient} overflow-hidden`}
         >
           {/* Decorative blobs */}
           <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/10 blur-2xl" />
@@ -173,7 +173,7 @@ const CaseStudyModal = ({
           </motion.button>
 
           {/* Project identity */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 bg-gradient-to-t from-black/60 to-transparent">
+          <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 bg-linear-to-t from-black/60 to-transparent">
             <div className="flex items-end gap-4">
               <span
                 className="text-5xl sm:text-6xl drop-shadow-2xl leading-none"
@@ -352,7 +352,7 @@ const CaseStudyModal = ({
                         {/* Arrow connector */}
                         {i < architectureSteps.length - 1 && (
                           <div
-                            className="absolute left-[13px] mt-8 w-px h-2 bg-[#915EFF]/30"
+                            className="absolute left-3.25 mt-8 w-px h-2 bg-[#915EFF]/30"
                             aria-hidden="true"
                           />
                         )}
@@ -395,7 +395,7 @@ const CaseStudyModal = ({
                   animate="visible"
                   className="space-y-4"
                 >
-                  {project.impact.map((metric: string, i: number) => (
+                  {project.impact.map((metric: string) => (
                     <motion.div
                       key={metric}
                       variants={listItem}
@@ -442,7 +442,7 @@ const CaseStudyModal = ({
               aria-label={`View source code for ${project.name}`}
               className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-sm font-bold transition-all duration-200 hover:scale-105"
             >
-              <Github size={16} /> Code
+              <GithubIcon size={16} /> Code
             </a>
             {project.live_link && (
               <a
@@ -487,7 +487,7 @@ const ProjectCard = ({
   <motion.div variants={cardVariant(index)}>
     <Tilt
       options={{ max: 12, scale: 1.02, speed: 400 }}
-      className="bg-tertiary p-5 rounded-3xl sm:w-[370px] w-full border border-white/5 hover:border-[#915EFF]/40 transition-all duration-300 group flex flex-col h-full will-change-transform"
+      className="bg-tertiary p-5 rounded-3xl sm:w-92.5 w-full border border-white/5 hover:border-[#915EFF]/40 transition-all duration-300 group flex flex-col h-full will-change-transform"
     >
       {/* Visual banner */}
       <button
@@ -523,7 +523,7 @@ const ProjectCard = ({
         <h3 className="text-white font-bold text-[21px] leading-tight group-hover:text-[#915EFF] transition-colors duration-200">
           {name}
         </h3>
-        <p className="mt-2.5 text-secondary text-[13.5px] leading-[21px] line-clamp-3">
+        <p className="mt-2.5 text-secondary text-[13.5px] leading-5.25 line-clamp-3">
           {description}
         </p>
       </div>
@@ -567,7 +567,7 @@ const Works = () => {
 
       <motion.p
         variants={fadeIn}
-        className="mt-3 text-secondary text-[17px] max-w-3xl leading-[30px]"
+        className="mt-3 text-secondary text-[17px] max-w-3xl leading-7.5"
       >
         I don't just build UI — I solve complex engineering challenges. Below
         are case studies detailing the architecture, key decisions, and
@@ -593,14 +593,14 @@ const Works = () => {
 
       {/* LeetCode callout */}
       <motion.div variants={fadeUp} className="mt-24 relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-[#915EFF] to-purple-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
+        <div className="absolute -inset-1 bg-linear-to-r from-[#915EFF] to-purple-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
         <div className="relative bg-tertiary rounded-3xl p-8 border border-white/5 flex flex-col md:flex-row items-center gap-8 text-left">
           <div className="text-6xl bg-black/20 p-6 rounded-2xl">⚡</div>
           <div className="flex-1">
             <h3 className="text-white font-bold text-[24px]">
               Algorithmic Mastery
             </h3>
-            <p className="text-secondary text-[16px] mt-2 leading-[28px]">
+            <p className="text-secondary text-[16px] mt-2 leading-7">
               Solved{" "}
               <span className="text-[#915EFF] font-black text-[22px]">
                 200+
