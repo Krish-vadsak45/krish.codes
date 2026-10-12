@@ -1,43 +1,31 @@
-import { lazy, Suspense } from "react";
-import { BrowserRouter } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import Hero from "./sections/Hero";
-import About from "./sections/About";
-import Works from "./sections/Works";
+import React from "react";
+import { DesktopProvider } from "./context/DesktopContext";
+import { DesktopWallpaper } from "./components/desktop/DesktopWallpaper";
+import { TopBar } from "./components/desktop/TopBar";
+import { DesktopGrid } from "./components/desktop/DesktopGrid";
+import { WindowManager } from "./components/desktop/WindowManager";
+import { Dock } from "./components/desktop/Dock";
 
-// Lazily load sections/components with heavy 3D dependencies
-const Tech = lazy(() => import("./sections/Tech"));
-const Contact = lazy(() => import("./sections/Contact"));
-const StarsCanvas = lazy(() => import("./components/canvas/Stars"));
-
-const Divider = () => (
-  <div className="section-divider mx-auto w-full max-w-5xl opacity-60" />
-);
-
-const App = () => {
+const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <div className="relative z-0 bg-primary">
-        <div className="bg-hero-pattern bg-cover bg-no-repeat bg-center">
-          <Navbar />
-          <Hero />
-        </div>
-        <About />
-        <Divider />
-        <Works />
-        <Divider />
-        <Suspense fallback={null}>
-          <Tech />
-        </Suspense>
-        <Divider />
-        <div className="relative z-0">
-          <Suspense fallback={null}>
-            <Contact />
-            <StarsCanvas />
-          </Suspense>
-        </div>
-      </div>
-    </BrowserRouter>
+    <DesktopProvider>
+      <main className="relative w-screen h-screen overflow-hidden bg-neutral-950 font-sans select-none text-white">
+        {/* 3D Background Wallpaper & Atmospheric Lighting */}
+        <DesktopWallpaper />
+
+        {/* Top macOS Menu Bar */}
+        <TopBar />
+
+        {/* Desktop Shortcut Icons */}
+        <DesktopGrid />
+
+        {/* Active Application Windows & Modals */}
+        <WindowManager />
+
+        {/* macOS Bottom Dock with Framer Motion Magnification */}
+        <Dock />
+      </main>
+    </DesktopProvider>
   );
 };
 

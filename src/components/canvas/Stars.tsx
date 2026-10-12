@@ -7,13 +7,13 @@ import * as random from "maath/random/dist/maath-random.esm";
 const Stars = (props: any) => {
   const ref = useRef<any>();
   const [sphere] = useState(() =>
-    random.inSphere(new Float32Array(6000), { radius: 1.2 })
+    random.inSphere(new Float32Array(3000), { radius: 1.2 })
   );
 
   useFrame((_state, delta) => {
     if (ref.current) {
-      ref.current.rotation.x -= delta / 12;
-      ref.current.rotation.y -= delta / 18;
+      ref.current.rotation.x -= delta / 16;
+      ref.current.rotation.y -= delta / 24;
     }
   });
 
@@ -23,7 +23,7 @@ const Stars = (props: any) => {
         <PointMaterial
           transparent
           color="#c084fc"
-          size={0.0018}
+          size={0.002}
           sizeAttenuation
           depthWrite={false}
         />
@@ -37,12 +37,14 @@ const StarsCanvas = () => {
     <div className="w-full h-auto absolute inset-0 z-[-1]">
       <Canvas
         frameloop="always"
-        dpr={[1, 2]}
+        dpr={[1, 1.2]}
         camera={{ position: [0, 0, 1] }}
         gl={{ 
           antialias: false, 
           alpha: true,
-          powerPreference: "high-performance"
+          powerPreference: "high-performance",
+          depth: false,
+          stencil: false
         }}
       >
         <Suspense fallback={null}>
