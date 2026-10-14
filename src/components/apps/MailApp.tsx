@@ -8,7 +8,7 @@ import {
   Linkedin 
 } from "lucide-react";
 
-export const MailApp: React.FC = () => {
+export const MailApp: React.FC = React.memo(() => {
   const [senderName, setSenderName] = useState("");
   const [senderEmail, setSenderEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -157,7 +157,7 @@ export const MailApp: React.FC = () => {
                   <span>GitHub</span>
                 </a>
                 <a
-                  href="https://linkedin.com"
+                  href="https://www.linkedin.com/in/krish-vadsak45"
                   target="_blank"
                   rel="noreferrer"
                   className="hover:text-white transition-colors flex items-center gap-1"
@@ -172,4 +172,4 @@ export const MailApp: React.FC = () => {
       </div>
     </WindowFrame>
   );
-};
+});

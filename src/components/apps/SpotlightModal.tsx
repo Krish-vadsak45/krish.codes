@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDesktop } from "../../context/DesktopContext";
-import { projects, technologies } from "../../constants";
+import { projects, technologies, certificates, developerProfile } from "../../constants";
 import { 
   Search, 
   Terminal, 
@@ -12,8 +12,12 @@ import {
   Mail, 
   Download, 
   Sparkles,
-  Command
+  Command,
+  Award,
+  Github,
+  Linkedin
 } from "lucide-react";
+import { LeetCodeIcon } from "../desktop/MacIcons";
 
 interface SearchResult {
   id: string;
@@ -139,13 +143,64 @@ export const SpotlightModal: React.FC = () => {
         setIsSpotlightOpen(false);
       },
     })),
+    ...certificates.map((c) => ({
+      id: `cert-${c.id}`,
+      title: c.title,
+      subtitle: `${c.issuer} · ${c.category} (${c.issueDate})`,
+      type: "action" as const,
+      icon: <Award className="w-4 h-4 text-amber-400" />,
+      action: () => {
+        openApp("settings");
+        setTimeout(() => {
+          window.dispatchEvent(
+            new CustomEvent("open-settings-tab", {
+              detail: { tab: "certificates", id: c.id },
+            })
+          );
+        }, 50);
+        setIsSpotlightOpen(false);
+      },
+    })),
+    {
+      id: "profile-leetcode",
+      title: "LeetCode Profile (@G8KOATYwH6)",
+      subtitle: "217 Solved in C++, 50 Days Badge 2025, Top 4.2% Badges",
+      type: "action" as const,
+      icon: <LeetCodeIcon className="w-4 h-4" />,
+      action: () => {
+        window.open(developerProfile.leetcode.url, "_blank");
+        setIsSpotlightOpen(false);
+      },
+    },
+    {
+      id: "profile-github",
+      title: "GitHub Profile (@Krish-vadsak45)",
+      subtitle: "14 Repositories, 575 Contributions, 78.9% TypeScript",
+      type: "action" as const,
+      icon: <Github className="w-4 h-4 text-white" />,
+      action: () => {
+        window.open(developerProfile.github.url, "_blank");
+        setIsSpotlightOpen(false);
+      },
+    },
+    {
+      id: "profile-linkedin",
+      title: "LinkedIn (Krish Vadsak)",
+      subtitle: "Full-Stack Software Engineer · AI & Scalable Systems",
+      type: "action" as const,
+      icon: <Linkedin className="w-4 h-4 text-blue-400" />,
+      action: () => {
+        window.open(developerProfile.linkedin.url, "_blank");
+        setIsSpotlightOpen(false);
+      },
+    },
   ];
 
   const filteredItems = baseItems.filter(
     (item) =>
       item.title.toLowerCase().includes(query.toLowerCase()) ||
       item.subtitle.toLowerCase().includes(query.toLowerCase())
-  ).slice(0, 8);
+  ).slice(0, 9);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") {
@@ -170,7 +225,7 @@ export const SpotlightModal: React.FC = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-black/50 backdrop-blur-sm select-none"
+          className="fixed inset-0 z-[10010] flex items-start justify-center pt-24 bg-black/50 backdrop-blur-sm select-none"
           onClick={() => setIsSpotlightOpen(false)}
         >
           <motion.div

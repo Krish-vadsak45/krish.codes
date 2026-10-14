@@ -1,12 +1,14 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDesktop } from "../../context/DesktopContext";
+import { certificates } from "../../constants";
 import { 
   FinderIcon, 
   SafariIcon, 
   TerminalIcon, 
   NotesIcon, 
-  MailIcon 
+  MailIcon,
+  LeetCodeMacIcon
 } from "./MacIcons";
 import { 
   Download, 
@@ -15,7 +17,8 @@ import {
   Terminal as TerminalLucide, 
   Settings as SettingsLucide, 
   RotateCw, 
-  FileText 
+  FileText,
+  Award
 } from "lucide-react";
 
 interface DesktopShortcut {
@@ -46,7 +49,7 @@ export const DesktopGrid: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const shortcutRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const shortcuts: DesktopShortcut[] = [
+  const shortcuts: DesktopShortcut[] = useMemo(() => [
     {
       id: "sc-projects",
       title: "Projects",
@@ -58,6 +61,12 @@ export const DesktopGrid: React.FC = () => {
       title: "NexusAI.app",
       icon: <SafariIcon className="w-12 h-12 drop-shadow-md" />,
       action: () => openApp("safari", "desktop"),
+    },
+    {
+      id: "sc-leetcode",
+      title: "LeetCode_217.app",
+      icon: <LeetCodeMacIcon className="w-12 h-12 drop-shadow-md" />,
+      action: () => window.open("https://leetcode.com/u/G8KOATYwH6/", "_blank"),
     },
     {
       id: "sc-terminal",
@@ -82,12 +91,27 @@ export const DesktopGrid: React.FC = () => {
       action: () => window.open("/resume.pdf", "_blank"),
     },
     {
+      id: "sc-certificates",
+      title: `Certificates (${certificates.length})`,
+      icon: (
+        <div className="w-12 h-12 rounded-[22%] bg-gradient-to-br from-amber-500 via-orange-500 to-amber-700 flex items-center justify-center shadow-lg drop-shadow-md border border-white/20">
+          <Award className="w-6 h-6 text-white" />
+        </div>
+      ),
+      action: () => {
+        openApp("settings", "desktop");
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent("open-settings-tab", { detail: "certificates" }));
+        }, 50);
+      },
+    },
+    {
       id: "sc-mail",
       title: "Contact.app",
       icon: <MailIcon className="w-12 h-12 drop-shadow-md" />,
       action: () => openApp("mail", "desktop"),
     },
-  ];
+  ], [openApp]);
 
   // Close context menu on outside click
   useEffect(() => {
@@ -96,11 +120,12 @@ export const DesktopGrid: React.FC = () => {
     return () => window.removeEventListener("click", handleCloseMenu);
   }, []);
 
-  // Native desktop marquee box selection handler
+  // Native desktop marquee box selection handler with 120fps RAF synchronization
   const handleDesktopPointerDown = (e: React.PointerEvent) => {
     // Only drag marquee if clicking on the background, not on an icon or context menu
     if ((e.target as HTMLElement).closest(".desktop-shortcut") || e.button !== 0) return;
 
+    e.preventDefault();
     setContextMenu(null);
     setSelectedIds([]);
 
@@ -108,38 +133,54 @@ export const DesktopGrid: React.FC = () => {
     const startY = e.clientY;
     setMarquee({ startX, startY, currentX: startX, currentY: startY });
 
+    let pendingMarqueeRaf: number | null = null;
+    let latestMoveX = startX;
+    let latestMoveY = startY;
+
     const handlePointerMove = (moveEv: PointerEvent) => {
-      setMarquee((prev) => (prev ? { ...prev, currentX: moveEv.clientX, currentY: moveEv.clientY } : null));
+      latestMoveX = moveEv.clientX;
+      latestMoveY = moveEv.clientY;
 
-      // Calculate intersection with desktop icons
-      const boxLeft = Math.min(startX, moveEv.clientX);
-      const boxRight = Math.max(startX, moveEv.clientX);
-      const boxTop = Math.min(startY, moveEv.clientY);
-      const boxBottom = Math.max(startY, moveEv.clientY);
+      if (pendingMarqueeRaf === null) {
+        pendingMarqueeRaf = requestAnimationFrame(() => {
+          pendingMarqueeRaf = null;
+          setMarquee((prev) => (prev ? { ...prev, currentX: latestMoveX, currentY: latestMoveY } : null));
 
-      const newlySelected: string[] = [];
-      shortcuts.forEach((sc) => {
-        const el = shortcutRefs.current[sc.id];
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          const intersects =
-            rect.left < boxRight &&
-            rect.right > boxLeft &&
-            rect.top < boxBottom &&
-            rect.bottom > boxTop;
-          if (intersects) newlySelected.push(sc.id);
-        }
-      });
-      setSelectedIds(newlySelected);
+          // Calculate intersection with desktop icons
+          const boxLeft = Math.min(startX, latestMoveX);
+          const boxRight = Math.max(startX, latestMoveX);
+          const boxTop = Math.min(startY, latestMoveY);
+          const boxBottom = Math.max(startY, latestMoveY);
+
+          const newlySelected: string[] = [];
+          shortcuts.forEach((sc) => {
+            const el = shortcutRefs.current[sc.id];
+            if (el) {
+              const rect = el.getBoundingClientRect();
+              const intersects =
+                rect.left < boxRight &&
+                rect.right > boxLeft &&
+                rect.top < boxBottom &&
+                rect.bottom > boxTop;
+              if (intersects) newlySelected.push(sc.id);
+            }
+          });
+          setSelectedIds(newlySelected);
+        });
+      }
     };
 
     const handlePointerUp = () => {
+      if (pendingMarqueeRaf !== null) {
+        cancelAnimationFrame(pendingMarqueeRaf);
+        pendingMarqueeRaf = null;
+      }
       setMarquee(null);
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
     };
 
-    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
     window.addEventListener("pointerup", handlePointerUp);
   };
 
@@ -179,19 +220,19 @@ export const DesktopGrid: React.FC = () => {
                 e.stopPropagation();
                 sc.action();
               }}
-              className={`desktop-shortcut group flex flex-col items-center w-20 p-1.5 rounded-lg transition-all duration-100 cursor-pointer ${
+              className={`desktop-shortcut group flex flex-col items-center w-20 p-2 rounded-xl transition-all duration-150 cursor-pointer ${
                 isSelected
-                  ? "bg-white/20 ring-1 ring-white/30 backdrop-blur-sm"
-                  : "hover:bg-white/10"
+                  ? "bg-white/20 ring-1 ring-white/35 backdrop-blur-md shadow-lg"
+                  : "hover:bg-white/10 hover:-translate-y-1 hover:shadow-xl"
               }`}
             >
-              <div className="group-hover:scale-105 transition-transform duration-150">
+              <div className="transition-all duration-200 group-hover:scale-110 drop-shadow-[0_10px_20px_rgba(0,0,0,0.65)] group-hover:drop-shadow-[0_16px_30px_rgba(0,0,0,0.85)]">
                 {sc.icon}
               </div>
               <span
-                className={`text-[11px] font-medium drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] mt-1.5 text-center leading-tight line-clamp-1 px-1 rounded transition-colors duration-100 ${
+                className={`text-[11px] font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] mt-2 text-center leading-tight line-clamp-1 px-1.5 py-0.5 rounded transition-colors duration-150 ${
                   isSelected
-                    ? "bg-blue-600 text-white shadow-sm"
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-600/40"
                     : "text-white group-hover:text-blue-100"
                 }`}
               >
@@ -224,7 +265,7 @@ export const DesktopGrid: React.FC = () => {
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.12, ease: [0.16, 1, 0.3, 1] }}
             style={{ left: contextMenu.x, top: contextMenu.y }}
-            className="fixed z-50 w-52 mac-glass border border-white/20 rounded-xl shadow-2xl p-1 text-white text-xs ring-1 ring-white/10 select-none"
+            className="fixed z-[9995] w-52 mac-glass border border-white/20 rounded-xl shadow-2xl p-1 text-white text-xs ring-1 ring-white/10 select-none"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -250,6 +291,20 @@ export const DesktopGrid: React.FC = () => {
             </button>
 
             <div className="h-[1px] bg-white/10 my-1 mx-1.5" />
+
+            <button
+              onClick={() => {
+                openApp("settings");
+                setTimeout(() => {
+                  window.dispatchEvent(new CustomEvent("open-settings-tab", { detail: "certificates" }));
+                }, 50);
+                setContextMenu(null);
+              }}
+              className="w-full px-2.5 py-1.5 rounded-lg flex items-center gap-2 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer text-neutral-200"
+            >
+              <Award className="w-3.5 h-3.5 text-amber-400" />
+              <span>Verified Credentials ({certificates.length})</span>
+            </button>
 
             <button
               onClick={() => {

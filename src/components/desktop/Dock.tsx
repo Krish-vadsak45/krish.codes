@@ -16,12 +16,13 @@ import {
   SettingsIcon, 
   NotesIcon, 
   MailIcon, 
-  GithubMacIcon 
+  GithubMacIcon,
+  LeetCodeMacIcon
 } from "./MacIcons";
 import { Linkedin } from "lucide-react";
 
 interface DockAppConfig {
-  id: AppId | "github" | "linkedin";
+  id: AppId | "github" | "linkedin" | "leetcode";
   title: string;
   icon: React.ReactNode;
   isExternal?: boolean;
@@ -61,8 +62,16 @@ const DOCK_APPS: DockAppConfig[] = [
     icon: <MailIcon />,
   },
   {
+    id: "leetcode",
+    title: "LeetCode (217 Solved)",
+    icon: <LeetCodeMacIcon />,
+    isExternal: true,
+    url: "https://leetcode.com/u/G8KOATYwH6/",
+    isSystemUtility: true,
+  },
+  {
     id: "github",
-    title: "GitHub",
+    title: "GitHub (14 Repos · 575 Contribs)",
     icon: <GithubMacIcon />,
     isExternal: true,
     url: "https://github.com/Krish-vadsak45",
@@ -70,14 +79,14 @@ const DOCK_APPS: DockAppConfig[] = [
   },
   {
     id: "linkedin",
-    title: "LinkedIn",
+    title: "LinkedIn (Krish Vadsak)",
     icon: (
       <div className="w-full h-full bg-[#0a66c2] rounded-[22%] flex items-center justify-center p-2.5 shadow-md">
         <Linkedin className="w-full h-full text-white" />
       </div>
     ),
     isExternal: true,
-    url: "https://linkedin.com",
+    url: "https://www.linkedin.com/in/krish-vadsak45",
     isSystemUtility: true,
   },
 ];
@@ -90,7 +99,7 @@ interface DockItemProps {
   onClick: () => void;
 }
 
-const DockItem: React.FC<DockItemProps> = ({ mouseX, app, isOpen, isActive, onClick }) => {
+const DockItem: React.FC<DockItemProps> = React.memo(({ mouseX, app, isOpen, isActive, onClick }) => {
   const itemRef = useRef<HTMLDivElement>(null);
   const [isBouncing, setIsBouncing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -166,7 +175,7 @@ const DockItem: React.FC<DockItemProps> = ({ mouseX, app, isOpen, isActive, onCl
       </div>
     </div>
   );
-};
+});
 
 export const Dock: React.FC = () => {
   const { windows, activeAppId, openApp, focusApp, minimizeApp } = useDesktop();
@@ -197,7 +206,7 @@ export const Dock: React.FC = () => {
   return (
     <nav
       aria-label="Desktop Dock"
-      className="fixed bottom-2.5 left-1/2 -translate-x-1/2 z-50 px-3 py-1.5 mac-dock-glass border border-white/20 rounded-2xl flex items-end gap-2.5 select-none"
+      className="fixed bottom-2.5 left-1/2 -translate-x-1/2 z-[9990] px-3 py-1.5 mac-dock-glass border border-white/20 rounded-2xl flex items-end gap-2.5 select-none"
       onMouseMove={(e) => mouseX.set(e.pageX)}
       onMouseLeave={() => mouseX.set(Infinity)}
     >

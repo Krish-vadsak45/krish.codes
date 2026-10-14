@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { AppId, WindowState } from "../types/desktop";
 
 interface DesktopContextType {
@@ -102,63 +102,80 @@ export const DesktopProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const focusApp = (id: AppId, source?: 'dock' | 'desktop') => {
-    topZIndexRef.current += 1;
+  const focusApp = useCallback((id: AppId, source?: 'dock' | 'desktop') => {
+    topZIndexRef.current = Math.min(450, topZIndexRef.current + 1);
     const nextZ = topZIndexRef.current;
-    setWindows((winMap) => ({
-      ...winMap,
-      [id]: {
-        ...winMap[id],
-        isOpen: true,
-        isMinimized: false,
-        zIndex: nextZ,
-        openSource: source || winMap[id]?.openSource || 'dock',
-      },
-    }));
+    setWindows((winMap) => {
+      const current = winMap[id];
+      if (current && current.isOpen && !current.isMinimized && current.zIndex === nextZ) {
+        return winMap;
+      }
+      return {
+        ...winMap,
+        [id]: {
+          ...current,
+          isOpen: true,
+          isMinimized: false,
+          zIndex: nextZ,
+          openSource: source || current?.openSource || 'dock',
+        },
+      };
+    });
     setActiveAppId(id);
-  };
+  }, []);
 
-  const openApp = (id: AppId, source?: 'dock' | 'desktop') => {
+  const openApp = useCallback((id: AppId, source?: 'dock' | 'desktop') => {
     focusApp(id, source);
-  };
+  }, [focusApp]);
 
-  const closeApp = (id: AppId) => {
-    setWindows((prev) => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        isOpen: false,
-        isMinimized: false,
-        exitType: 'close',
-      },
-    }));
-    if (activeAppId === id) {
-      // Find another open and not minimized app with the highest zIndex
-      const otherOpen = Object.values(windows)
-        .filter((w) => w.id !== id && w.isOpen && !w.isMinimized)
-        .sort((a, b) => b.zIndex - a.zIndex);
-      setActiveAppId(otherOpen.length > 0 ? otherOpen[0].id : null);
-    }
-  };
+  const closeApp = useCallback((id: AppId) => {
+    setWindows((prev) => {
+      const current = prev[id];
+      if (current && !current.isOpen && !current.isMinimized && current.exitType === 'close') {
+        return prev;
+      }
+      return {
+        ...prev,
+        [id]: {
+          ...current,
+          isOpen: false,
+          isMinimized: false,
+          exitType: 'close',
+        },
+      };
+    });
+    setActiveAppId((currActive) => {
+      if (currActive === id) {
+        return null;
+      }
+      return currActive;
+    });
+  }, []);
 
-  const minimizeApp = (id: AppId) => {
-    setWindows((prev) => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        isMinimized: true,
-        exitType: 'minimize',
-      },
-    }));
-    if (activeAppId === id) {
-      const otherOpen = Object.values(windows)
-        .filter((w) => w.id !== id && w.isOpen && !w.isMinimized)
-        .sort((a, b) => b.zIndex - a.zIndex);
-      setActiveAppId(otherOpen.length > 0 ? otherOpen[0].id : null);
-    }
-  };
+  const minimizeApp = useCallback((id: AppId) => {
+    setWindows((prev) => {
+      const current = prev[id];
+      if (current && current.isMinimized && current.exitType === 'minimize') {
+        return prev;
+      }
+      return {
+        ...prev,
+        [id]: {
+          ...current,
+          isMinimized: true,
+          exitType: 'minimize',
+        },
+      };
+    });
+    setActiveAppId((currActive) => {
+      if (currActive === id) {
+        return null;
+      }
+      return currActive;
+    });
+  }, []);
 
-  const toggleMaximizeApp = (id: AppId) => {
+  const toggleMaximizeApp = useCallback((id: AppId) => {
     setWindows((prev) => ({
       ...prev,
       [id]: {
@@ -167,63 +184,100 @@ export const DesktopProvider: React.FC<{ children: React.ReactNode }> = ({ child
       },
     }));
     focusApp(id);
-  };
+  }, [focusApp]);
 
-  const updatePosition = (id: AppId, pos: { x: number; y: number }) => {
-    setWindows((prev) => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        position: pos,
-      },
-    }));
-  };
+  const updatePosition = useCallback((id: AppId, pos: { x: number; y: number }) => {
+    setWindows((prev) => {
+      const current = prev[id];
+      if (current && current.position.x === pos.x && current.position.y === pos.y) {
+        return prev;
+      }
+      return {
+        ...prev,
+        [id]: {
+          ...current,
+          position: pos,
+        },
+      };
+    });
+  }, []);
 
-  const updateSize = (id: AppId, size: { width: number; height: number }) => {
-    setWindows((prev) => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        size,
-      },
-    }));
-  };
+  const updateSize = useCallback((id: AppId, size: { width: number; height: number }) => {
+    setWindows((prev) => {
+      const current = prev[id];
+      if (current && current.size.width === size.width && current.size.height === size.height) {
+        return prev;
+      }
+      return {
+        ...prev,
+        [id]: {
+          ...current,
+          size,
+        },
+      };
+    });
+  }, []);
 
-  const updateSizeAndPosition = (
+  const updateSizeAndPosition = useCallback((
     id: AppId,
     size: { width: number; height: number },
     pos: { x: number; y: number }
   ) => {
-    setWindows((prev) => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        size,
-        position: pos,
-      },
-    }));
-  };
+    setWindows((prev) => {
+      const current = prev[id];
+      if (
+        current &&
+        current.size.width === size.width &&
+        current.size.height === size.height &&
+        current.position.x === pos.x &&
+        current.position.y === pos.y
+      ) {
+        return prev;
+      }
+      return {
+        ...prev,
+        [id]: {
+          ...current,
+          size,
+          position: pos,
+        },
+      };
+    });
+  }, []);
 
-  const toggleSpotlight = () => setIsSpotlightOpen((prev) => !prev);
+  const toggleSpotlight = useCallback(() => setIsSpotlightOpen((prev) => !prev), []);
+
+  const contextValue = useMemo(() => ({
+    windows,
+    activeAppId,
+    isSpotlightOpen,
+    openApp,
+    closeApp,
+    minimizeApp,
+    toggleMaximizeApp,
+    focusApp,
+    updatePosition,
+    updateSize,
+    updateSizeAndPosition,
+    setIsSpotlightOpen,
+    toggleSpotlight,
+  }), [
+    windows,
+    activeAppId,
+    isSpotlightOpen,
+    openApp,
+    closeApp,
+    minimizeApp,
+    toggleMaximizeApp,
+    focusApp,
+    updatePosition,
+    updateSize,
+    updateSizeAndPosition,
+    toggleSpotlight,
+  ]);
 
   return (
-    <DesktopContext.Provider
-      value={{
-        windows,
-        activeAppId,
-        isSpotlightOpen,
-        openApp,
-        closeApp,
-        minimizeApp,
-        toggleMaximizeApp,
-        focusApp,
-        updatePosition,
-        updateSize,
-        updateSizeAndPosition,
-        setIsSpotlightOpen,
-        toggleSpotlight,
-      }}
-    >
+    <DesktopContext.Provider value={contextValue}>
       {children}
     </DesktopContext.Provider>
   );

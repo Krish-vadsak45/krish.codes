@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDesktop } from "../../context/DesktopContext";
 import { AppId } from "../../types/desktop";
+import { certificates } from "../../constants";
 import { 
   Search, 
   Wifi, 
@@ -19,7 +20,8 @@ import {
   Minimize2,
   Maximize2,
   XSquare,
-  Sparkles
+  Sparkles,
+  Award
 } from "lucide-react";
 
 const APP_DISPLAY_NAMES: Record<AppId, string> = {
@@ -31,7 +33,7 @@ const APP_DISPLAY_NAMES: Record<AppId, string> = {
   mail: "Mail",
 };
 
-export const TopBar: React.FC = () => {
+export const TopBar: React.FC = React.memo(() => {
   const { 
     activeAppId, 
     openApp, 
@@ -92,7 +94,7 @@ export const TopBar: React.FC = () => {
   const activeAppName = activeAppId ? APP_DISPLAY_NAMES[activeAppId] : "Krish OS";
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-7 z-50 bg-black/55 backdrop-blur-2xl border-b border-white/10 text-white text-xs select-none flex items-center justify-between px-3">
+    <header className="fixed top-0 left-0 right-0 h-7 z-[9999] bg-black/55 backdrop-blur-2xl border-b border-white/10 text-white text-xs select-none flex items-center justify-between px-3">
       {/* Left Menu Items */}
       <div className="flex items-center space-x-2 topbar-menu-container">
         {/* Apple Logo Dropdown */}
@@ -123,7 +125,7 @@ export const TopBar: React.FC = () => {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: -2 }}
                 transition={{ duration: 0.12, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute left-0 top-7 w-60 mac-glass border border-white/20 rounded-xl shadow-2xl p-1 z-50 text-white ring-1 ring-white/10 origin-top-left"
+                className="absolute left-0 top-7 w-60 mac-glass border border-white/20 rounded-xl shadow-2xl p-1 z-[10000] text-white ring-1 ring-white/10 origin-top-left"
               >
                 <button
                   onClick={() => {
@@ -147,6 +149,25 @@ export const TopBar: React.FC = () => {
                 >
                   <span>System Settings...</span>
                   <span className="text-[10px] text-neutral-300 font-mono">⌘,</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    openApp("settings");
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent("open-settings-tab", { detail: "certificates" }));
+                    }, 50);
+                    setActiveMenu(null);
+                  }}
+                  className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-100 flex items-center justify-between text-neutral-100"
+                >
+                  <span className="flex items-center gap-2">
+                    <Award className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Verified Credentials</span>
+                  </span>
+                  <span className="text-[10px] text-amber-300 font-mono font-bold bg-amber-500/20 px-1.5 py-0.5 rounded border border-amber-500/30">
+                    {certificates.length}
+                  </span>
                 </button>
 
                 <div className="h-[1px] bg-white/10 my-1 mx-2" />
@@ -224,7 +245,7 @@ export const TopBar: React.FC = () => {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: -2 }}
                 transition={{ duration: 0.12 }}
-                className="absolute left-0 top-7 w-56 mac-glass border border-white/20 rounded-xl shadow-2xl p-1 z-50 text-white ring-1 ring-white/10"
+                className="absolute left-0 top-7 w-56 mac-glass border border-white/20 rounded-xl shadow-2xl p-1 z-[10000] text-white ring-1 ring-white/10"
               >
                 <button
                   onClick={() => {
@@ -250,6 +271,19 @@ export const TopBar: React.FC = () => {
                     <Compass className="w-3.5 h-3.5 text-indigo-400" /> Open Safari Inspector
                   </span>
                   <span className="font-mono text-[10px] text-neutral-300">⌘O</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    openApp("finder");
+                    setActiveMenu(null);
+                  }}
+                  className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-blue-600 flex items-center justify-between text-neutral-100"
+                >
+                  <span className="flex items-center gap-2">
+                    <Award className="w-3.5 h-3.5 text-amber-400" /> Certificates Folder
+                  </span>
+                  <span className="font-mono text-[10px] text-amber-300">{certificates.length} items</span>
                 </button>
 
                 <div className="h-[1px] bg-white/10 my-1 mx-2" />
@@ -290,7 +324,7 @@ export const TopBar: React.FC = () => {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: -2 }}
                 transition={{ duration: 0.12 }}
-                className="absolute left-0 top-7 w-56 mac-glass border border-white/20 rounded-xl shadow-2xl p-1 z-50 text-white ring-1 ring-white/10"
+                className="absolute left-0 top-7 w-56 mac-glass border border-white/20 rounded-xl shadow-2xl p-1 z-[10000] text-white ring-1 ring-white/10"
               >
                 <button
                   onClick={() => {
@@ -341,7 +375,7 @@ export const TopBar: React.FC = () => {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: -2 }}
                 transition={{ duration: 0.12 }}
-                className="absolute left-0 top-7 w-56 mac-glass border border-white/20 rounded-xl shadow-2xl p-1 z-50 text-white ring-1 ring-white/10"
+                className="absolute left-0 top-7 w-56 mac-glass border border-white/20 rounded-xl shadow-2xl p-1 z-[10000] text-white ring-1 ring-white/10"
               >
                 <button
                   onClick={() => {
@@ -392,7 +426,7 @@ export const TopBar: React.FC = () => {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: -2 }}
                 transition={{ duration: 0.12 }}
-                className="absolute left-0 top-7 w-56 mac-glass border border-white/20 rounded-xl shadow-2xl p-1 z-50 text-white ring-1 ring-white/10"
+                className="absolute left-0 top-7 w-56 mac-glass border border-white/20 rounded-xl shadow-2xl p-1 z-[10000] text-white ring-1 ring-white/10"
               >
                 <button
                   onClick={() => {
@@ -469,7 +503,7 @@ export const TopBar: React.FC = () => {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -4 }}
                 transition={{ duration: 0.12, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute right-0 top-8 w-64 mac-glass border border-white/20 rounded-xl shadow-2xl p-3 z-50 text-white ring-1 ring-white/10 origin-top-right"
+                className="absolute right-0 top-8 w-64 mac-glass border border-white/20 rounded-xl shadow-2xl p-3 z-[10000] text-white ring-1 ring-white/10 origin-top-right"
               >
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <div className="bg-white/10 p-2.5 rounded-lg flex flex-col justify-between">
@@ -522,4 +556,4 @@ export const TopBar: React.FC = () => {
       </div>
     </header>
   );
-};
+});

@@ -180,21 +180,67 @@ a:hover {
   -webkit-backface-visibility: hidden;
 }
 
+/* ===== 3D macOS Glassmorphism Engine ===== */
 .mac-glass {
-  background: rgba(22, 22, 28, 0.82);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: linear-gradient(135deg, rgba(28, 28, 36, 0.82) 0%, rgba(16, 16, 22, 0.90) 100%);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 
+    0 30px 80px -15px rgba(0, 0, 0, 0.8),
+    0 0 35px -8px rgba(99, 102, 241, 0.12),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.4);
   contain: layout style;
 }
 
 .mac-dock-glass {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(24px) saturate(200%);
-  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.08) 55%, rgba(180, 180, 210, 0.14) 100%);
+  backdrop-filter: blur(32px) saturate(220%);
+  -webkit-backdrop-filter: blur(32px) saturate(220%);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   box-shadow: 
-    0 20px 50px rgba(0, 0, 0, 0.55),
-    inset 0 1px 1px rgba(255, 255, 255, 0.35),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+    0 25px 60px -10px rgba(0, 0, 0, 0.65),
+    0 10px 25px -5px rgba(0, 0, 0, 0.45),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.35),
+    inset 0 0 20px rgba(255, 255, 255, 0.06);
+}
+
+.mac-card-glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 10px 30px -8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mac-card-glass:hover {
+  transform: translateY(-2px) scale(1.01);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    0 18px 40px -10px rgba(0, 0, 0, 0.6),
+    0 0 25px rgba(99, 102, 241, 0.22),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.mac-specular-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.mac-specular-sheen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
+  pointer-events: none;
 }
 
 /* will-change is intentionally NOT applied globally.
@@ -214,4 +260,20 @@ a:hover {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== Ultra-Smooth 120fps Scroll Optimizations ===== */
+.mac-scroll-viewport {
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: scroll-position;
+}
+
+.mac-cert-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 240px;
+  contain: layout style paint;
 }

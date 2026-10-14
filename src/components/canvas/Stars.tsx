@@ -12,8 +12,9 @@ const Stars = (props: any) => {
 
   useFrame((_state, delta) => {
     if (ref.current) {
-      ref.current.rotation.x -= delta / 16;
-      ref.current.rotation.y -= delta / 24;
+      const clampedDelta = Math.min(delta, 0.05);
+      ref.current.rotation.x -= clampedDelta / 16;
+      ref.current.rotation.y -= clampedDelta / 24;
     }
   });
 

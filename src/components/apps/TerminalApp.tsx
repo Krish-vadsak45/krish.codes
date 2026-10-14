@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { WindowFrame } from "../desktop/WindowFrame";
-import { projects, skillCategories } from "../../constants";
+import { projects, skillCategories, developerProfile, certificates } from "../../constants";
 import { useDesktop } from "../../context/DesktopContext";
 
 interface HistoryItem {
@@ -9,7 +9,7 @@ interface HistoryItem {
   output: React.ReactNode;
 }
 
-export const TerminalApp: React.FC = () => {
+export const TerminalApp: React.FC = React.memo(() => {
   const { openApp } = useDesktop();
   const [inputVal, setInputVal] = useState("");
   const [history, setHistory] = useState<HistoryItem[]>([
@@ -66,8 +66,23 @@ export const TerminalApp: React.FC = () => {
           <div className="space-y-1.5 text-xs text-neutral-300 font-mono py-1">
             <p className="text-yellow-400 font-semibold mb-1">Available Commands:</p>
             <div className="grid grid-cols-[140px_1fr] gap-x-2 gap-y-1">
+              <span className="text-amber-400">leetcode</span>
+              <span>Display verified LeetCode stats (217 Solved, C++, Badges)</span>
+
+              <span className="text-purple-400">github</span>
+              <span>View GitHub stats (14 Repos, 575 Contribs, streak)</span>
+
+              <span className="text-blue-400">linkedin</span>
+              <span>Krish's LinkedIn profile & career info</span>
+
+              <span className="text-emerald-400">stats</span>
+              <span>All engineering metrics & problem-solving scoreboard</span>
+
               <span className="text-cyan-400">projects</span>
               <span>List featured full-stack projects (*NexusAI*, *MyShow*, etc.)</span>
+
+              <span className="text-amber-400">certs</span>
+              <span>List all {certificates.length} verified certifications with links & credential IDs</span>
 
               <span className="text-cyan-400">skills</span>
               <span>Display tech stack & engineering capabilities</span>
@@ -86,6 +101,33 @@ export const TerminalApp: React.FC = () => {
 
               <span className="text-cyan-400">clear</span>
               <span>Clear terminal screen</span>
+            </div>
+          </div>
+        );
+        break;
+
+      case "certs":
+      case "certificates":
+        output = (
+          <div className="space-y-2 py-1 font-mono text-xs">
+            <div className="flex items-center justify-between pb-1 border-b border-white/10 text-amber-300 font-bold">
+              <span>Verified Certifications & Credentials ({certificates.length} Total)</span>
+              <span className="text-[10px] text-neutral-400">Type 'open settings' for QuickLook gallery</span>
+            </div>
+            <div className="space-y-1.5 max-h-72 mac-scroll-viewport pr-1">
+              {certificates.map((c, idx) => (
+                <div key={c.id} className="border-l-2 border-amber-500/40 pl-2 text-[11px]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-yellow-300 font-semibold">[{idx + 1}] {c.title}</span>
+                    <a href={c.driveUrl} target="_blank" rel="noreferrer" className="text-blue-400 underline hover:text-blue-300 text-[10px]">
+                      Drive ↗
+                    </a>
+                  </div>
+                  <div className="text-neutral-400 text-[10px]">
+                    {c.issuer} · {c.issueDate} {c.credentialId ? `| ID: ${c.credentialId}` : ""}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         );
@@ -210,6 +252,121 @@ export const TerminalApp: React.FC = () => {
         }
         break;
 
+      case "leetcode":
+        output = (
+          <div className="space-y-2 py-1 font-mono text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-amber-400 font-bold">⚡ LeetCode Problem Solving Matrix:</span>
+              <span className="text-neutral-400 text-[10px]">(@{developerProfile.leetcode.username})</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 bg-neutral-900/80 p-2.5 rounded border border-white/10">
+              <div>
+                <span className="text-emerald-400 font-bold">Easy: </span>
+                <span className="text-white">{developerProfile.leetcode.easy.solved} / {developerProfile.leetcode.easy.total}</span>
+              </div>
+              <div>
+                <span className="text-amber-400 font-bold">Medium: </span>
+                <span className="text-white">{developerProfile.leetcode.medium.solved} / {developerProfile.leetcode.medium.total}</span>
+              </div>
+              <div>
+                <span className="text-rose-400 font-bold">Hard: </span>
+                <span className="text-white">{developerProfile.leetcode.hard.solved} / {developerProfile.leetcode.hard.total}</span>
+              </div>
+            </div>
+            <div className="text-neutral-300 space-y-0.5">
+              <p>🏆 Total Solved: <span className="text-amber-300 font-bold">{developerProfile.leetcode.totalSolved} problems</span> ({developerProfile.leetcode.primaryLanguage})</p>
+              <p>🎖️ Badges: <span className="text-amber-300 font-bold">{developerProfile.leetcode.badgeHighlight}</span> ({developerProfile.leetcode.badgesCount} total badges)</p>
+              <p>📈 Contest Rating: <span className="text-blue-400 font-bold">{developerProfile.leetcode.contestRating}</span> ({developerProfile.leetcode.topPercentage}) | Rank: #{developerProfile.leetcode.globalRanking}</p>
+              <p>🧠 Core Topics: Dynamic Programming (35), Array (109), Two Pointers (36), Strings (42), DFS (28)</p>
+            </div>
+            <a 
+              href={developerProfile.leetcode.url} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="inline-block text-amber-400 underline hover:text-amber-300 pt-1"
+            >
+              Open LeetCode Profile ↗
+            </a>
+          </div>
+        );
+        break;
+
+      case "github":
+        output = (
+          <div className="space-y-2 py-1 font-mono text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-purple-400 font-bold">🐙 GitHub Activity & Repositories:</span>
+              <span className="text-neutral-400 text-[10px]">(@{developerProfile.github.username})</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-neutral-900/80 p-2 rounded border border-white/10 text-center">
+              <div>
+                <div className="text-neutral-400 text-[10px]">Repos</div>
+                <div className="text-white font-bold">{developerProfile.github.publicRepos}</div>
+              </div>
+              <div>
+                <div className="text-neutral-400 text-[10px]">Contributions</div>
+                <div className="text-emerald-400 font-bold">{developerProfile.github.contributions}</div>
+              </div>
+              <div>
+                <div className="text-neutral-400 text-[10px]">Commits (1y)</div>
+                <div className="text-blue-400 font-bold">{developerProfile.github.commitsPastYear}</div>
+              </div>
+              <div>
+                <div className="text-neutral-400 text-[10px]">Streak</div>
+                <div className="text-amber-400 font-bold">{developerProfile.github.longestStreak}</div>
+              </div>
+            </div>
+            <p className="text-neutral-300">Languages: TypeScript (78.9%), JavaScript (16.6%), CSS (3.2%), HTML (1.2%)</p>
+            <div className="text-neutral-400">
+              Featured Repos: NexusAI, MyShow, ShopIQ, PlacemateAI, Nasa-BloomWatch, AssetFlow
+            </div>
+            <a 
+              href={developerProfile.github.url} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="inline-block text-purple-400 underline hover:text-purple-300 pt-1"
+            >
+              Open GitHub Profile ↗
+            </a>
+          </div>
+        );
+        break;
+
+      case "linkedin":
+        output = (
+          <div className="space-y-2 py-1 font-mono text-xs text-neutral-300">
+            <p className="text-blue-400 font-bold">💼 LinkedIn Profile:</p>
+            <p className="text-white font-semibold">{developerProfile.name}</p>
+            <p className="text-neutral-300 font-sans leading-relaxed">
+              {developerProfile.linkedin.headline}
+            </p>
+            <p className="text-neutral-400">Location: {developerProfile.location} · {developerProfile.openToRoles}</p>
+            <a 
+              href={developerProfile.linkedin.url} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="inline-block text-blue-400 underline hover:text-blue-300 pt-1"
+            >
+              Open LinkedIn Profile ↗
+            </a>
+          </div>
+        );
+        break;
+
+      case "stats":
+        output = (
+          <div className="space-y-2 py-1 font-mono text-xs text-neutral-300">
+            <p className="text-emerald-400 font-bold">📊 Engineering Scorecard:</p>
+            <div className="space-y-1 bg-neutral-900/80 p-3 rounded border border-white/10">
+              <p>• LeetCode: <span className="text-amber-400 font-bold">217 Solved</span> (132 Medium, 15 Hard) · Rating: 1360 · 50-Day Badge 2025</p>
+              <p>• GitHub: <span className="text-blue-400 font-bold">575 Contributions</span> · 14 Repositories · 31-Day Streak</p>
+              <p>• Primary Languages: <span className="text-emerald-400 font-bold">TypeScript (78.9%)</span> · C++ (LeetCode)</p>
+              <p>• Architecture: Next.js 16, React 19, MongoDB, Inngest, LangChain, Gemini REST</p>
+            </div>
+          </div>
+        );
+        break;
+
       case "clear":
         setHistory([]);
         setInputVal("");
@@ -314,4 +471,4 @@ export const TerminalApp: React.FC = () => {
       </div>
     </WindowFrame>
   );
-};
+});

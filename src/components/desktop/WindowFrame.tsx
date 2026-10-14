@@ -64,16 +64,32 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
       initY: win.position.y,
     };
 
+    let pendingDragRaf: number | null = null;
+    let latestClientX = e.clientX;
+    let latestClientY = e.clientY;
+
     const handlePointerMove = (moveEv: PointerEvent) => {
-      if (!dragRef.current) return;
-      const dx = moveEv.clientX - dragRef.current.startX;
-      const dy = moveEv.clientY - dragRef.current.startY;
-      const newX = Math.max(-win.size.width + 120, Math.min(window.innerWidth - 80, dragRef.current.initX + dx));
-      const newY = Math.max(30, Math.min(window.innerHeight - 80, dragRef.current.initY + dy));
-      updatePosition(id, { x: newX, y: newY });
+      latestClientX = moveEv.clientX;
+      latestClientY = moveEv.clientY;
+
+      if (pendingDragRaf === null) {
+        pendingDragRaf = requestAnimationFrame(() => {
+          pendingDragRaf = null;
+          if (!dragRef.current) return;
+          const dx = latestClientX - dragRef.current.startX;
+          const dy = latestClientY - dragRef.current.startY;
+          const newX = Math.max(-win.size.width + 120, Math.min(window.innerWidth - 80, dragRef.current.initX + dx));
+          const newY = Math.max(30, Math.min(window.innerHeight - 80, dragRef.current.initY + dy));
+          updatePosition(id, { x: newX, y: newY });
+        });
+      }
     };
 
     const handlePointerUp = () => {
+      if (pendingDragRaf !== null) {
+        cancelAnimationFrame(pendingDragRaf);
+        pendingDragRaf = null;
+      }
       setIsDragging(false);
       dragRef.current = null;
       window.removeEventListener("pointermove", handlePointerMove);
@@ -84,7 +100,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
     window.addEventListener("pointerup", handlePointerUp);
   };
 
-  // High-performance resize handler
+  // High-performance resize handler with 120fps RAF synchronization
   const handleResizeStart = (
     e: React.PointerEvent,
     direction: "e" | "s" | "se" | "w" | "sw"
@@ -105,46 +121,62 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
       initialY: win.position.y,
     };
 
+    let pendingResizeRaf: number | null = null;
+    let latestResizeX = e.clientX;
+    let latestResizeY = e.clientY;
+
     const handlePointerMove = (moveEvent: PointerEvent) => {
-      if (!resizeRef.current) return;
-      const { direction, startX, startY, initialWidth, initialHeight, initialX, initialY } =
-        resizeRef.current;
+      latestResizeX = moveEvent.clientX;
+      latestResizeY = moveEvent.clientY;
 
-      const deltaX = moveEvent.clientX - startX;
-      const deltaY = moveEvent.clientY - startY;
+      if (pendingResizeRaf === null) {
+        pendingResizeRaf = requestAnimationFrame(() => {
+          pendingResizeRaf = null;
+          if (!resizeRef.current) return;
+          const { direction, startX, startY, initialWidth, initialHeight, initialX, initialY } =
+            resizeRef.current;
 
-      let newWidth = initialWidth;
-      let newHeight = initialHeight;
-      let newX = initialX;
-      let newY = initialY;
+          const deltaX = latestResizeX - startX;
+          const deltaY = latestResizeY - startY;
 
-      const MIN_WIDTH = 440;
-      const MIN_HEIGHT = 280;
-      const MAX_WIDTH = window.innerWidth - 16;
-      const MAX_HEIGHT = window.innerHeight - 60;
+          let newWidth = initialWidth;
+          let newHeight = initialHeight;
+          let newX = initialX;
+          let newY = initialY;
 
-      if (direction.includes("e")) {
-        newWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, initialWidth + deltaX));
+          const MIN_WIDTH = 440;
+          const MIN_HEIGHT = 280;
+          const MAX_WIDTH = window.innerWidth - 16;
+          const MAX_HEIGHT = window.innerHeight - 60;
+
+          if (direction.includes("e")) {
+            newWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, initialWidth + deltaX));
+          }
+          if (direction.includes("s")) {
+            newHeight = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, initialHeight + deltaY));
+          }
+          if (direction.includes("w")) {
+            const potentialWidth = initialWidth - deltaX;
+            if (potentialWidth >= MIN_WIDTH && potentialWidth <= MAX_WIDTH) {
+              newWidth = potentialWidth;
+              newX = initialX + deltaX;
+            }
+          }
+
+          updateSizeAndPosition(
+            id,
+            { width: newWidth, height: newHeight },
+            { x: newX, y: newY }
+          );
+        });
       }
-      if (direction.includes("s")) {
-        newHeight = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, initialHeight + deltaY));
-      }
-      if (direction.includes("w")) {
-        const potentialWidth = initialWidth - deltaX;
-        if (potentialWidth >= MIN_WIDTH && potentialWidth <= MAX_WIDTH) {
-          newWidth = potentialWidth;
-          newX = initialX + deltaX;
-        }
-      }
-
-      updateSizeAndPosition(
-        id,
-        { width: newWidth, height: newHeight },
-        { x: newX, y: newY }
-      );
     };
 
     const handlePointerUp = () => {
+      if (pendingResizeRaf !== null) {
+        cancelAnimationFrame(pendingResizeRaf);
+        pendingResizeRaf = null;
+      }
       setIsResizing(false);
       resizeRef.current = null;
       window.removeEventListener("pointermove", handlePointerMove);
@@ -159,11 +191,11 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
 
   return (
     <motion.div
-      // Authentic macOS Window Open Animation
+      // Authentic macOS Window Open Animation with Apple Spring Physics
       initial={
         win.openSource === "desktop"
-          ? { opacity: 0, scale: 0.9, y: 15 }
-          : { opacity: 0, scale: 0.35, y: 220 }
+          ? { opacity: 0, scale: 0.85, y: 15 }
+          : { opacity: 0, scale: 0.35, y: 140 }
       }
       animate={{
         opacity: 1,
@@ -173,45 +205,60 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
         top: win.isMaximized ? 34 : win.position.y,
         width: win.isMaximized ? "calc(100vw - 16px)" : win.size.width,
         height: win.isMaximized ? "calc(100vh - 110px)" : win.size.height,
+        transition: isInteracting
+          ? { duration: 0 }
+          : {
+              scale: { type: "spring", stiffness: 320, damping: 24, mass: 0.8 },
+              y: { type: "spring", stiffness: 300, damping: 25, mass: 0.8 },
+              opacity: { duration: 0.16, ease: "easeOut" },
+              left: { duration: 0.26, ease: [0.16, 1, 0.3, 1] },
+              top: { duration: 0.26, ease: [0.16, 1, 0.3, 1] },
+              width: { duration: 0.26, ease: [0.16, 1, 0.3, 1] },
+              height: { duration: 0.26, ease: [0.16, 1, 0.3, 1] },
+            },
       }}
-      // Authentic macOS Close (scale-down & fade) vs Minimize (swoop down towards dock)
+      // Authentic macOS Close (zooms back in space & fades) vs Minimize (swoops down to Dock)
       exit={
         isMinimizing
           ? {
               opacity: 0,
-              scaleX: 0.25,
-              scaleY: 0.08,
-              y: 400,
-              transition: { duration: 0.26, ease: [0.25, 1, 0.5, 1] },
+              scaleX: 0.2,
+              scaleY: 0.05,
+              y: 380,
+              transition: { duration: 0.28, ease: [0.32, 0, 0.24, 1] },
             }
           : {
               opacity: 0,
-              scale: 0.88,
-              y: 8,
-              transition: { duration: 0.16, ease: [0.16, 1, 0.3, 1] },
+              scale: 0.84,
+              y: 0,
+              transition: { duration: 0.18, ease: [0.2, 0, 0, 1] },
             }
       }
-      transition={{ 
-        duration: isInteracting ? 0 : 0.22, 
-        ease: [0.16, 1, 0.3, 1],
-      }}
       style={{
         position: "fixed",
         zIndex: win.zIndex,
+        willChange: isInteracting ? "left, top, width, height" : "auto",
+        transformOrigin: isMinimizing
+          ? "center bottom"
+          : win.openSource === "desktop"
+          ? "top left"
+          : "center center",
       }}
       onMouseDown={() => focusApp(id)}
-      className={`flex flex-col rounded-xl overflow-hidden border mac-glass select-none transition-shadow duration-150 ${
+      className={`flex flex-col rounded-xl overflow-hidden mac-glass mac-specular-sheen select-none transition-shadow duration-150 ${
         isActive
-          ? "border-white/25 shadow-[0_25px_65px_-12px_rgba(0,0,0,0.85)] ring-1 ring-white/15"
-          : "border-white/10 shadow-[0_12px_35px_-10px_rgba(0,0,0,0.6)] opacity-95"
+          ? "border-white/30 shadow-[0_30px_90px_-15px_rgba(0,0,0,0.85)] ring-1 ring-white/20"
+          : "border-white/15 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.65)] opacity-95"
       }`}
     >
-      {/* Title Bar - Drag Handle */}
+      {/* Title Bar - Drag Handle with 3D Specular Light */}
       <div
         onPointerDown={handleTitlePointerDown}
         onDoubleClick={() => toggleMaximizeApp(id)}
-        className={`h-10 px-3.5 flex items-center justify-between border-b transition-colors cursor-default select-none ${
-          isActive ? "bg-neutral-900/85 border-white/10" : "bg-neutral-900/50 border-white/5"
+        className={`h-10 px-3.5 flex items-center justify-between border-b transition-colors cursor-default select-none relative ${
+          isActive 
+            ? "bg-gradient-to-b from-white/12 via-neutral-900/80 to-neutral-950/90 border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]" 
+            : "bg-neutral-900/60 border-white/5"
         }`}
       >
         {/* macOS Traffic Lights with Authentic Inactive Dimming & Hover Glyphs */}
