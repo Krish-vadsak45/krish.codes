@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { 
   motion, 
   useMotionValue, 
@@ -91,17 +91,20 @@ const DOCK_APPS: DockAppConfig[] = [
   },
 ];
 
+import { triggerMacDockBounce } from "../../utils/macMotion";
+
 interface DockItemProps {
   mouseX: MotionValue<number>;
   app: DockAppConfig;
   isOpen?: boolean;
   isActive?: boolean;
+  isMobile: boolean;
   onClick: () => void;
 }
 
-const DockItem: React.FC<DockItemProps> = React.memo(({ mouseX, app, isOpen, isActive, onClick }) => {
+const DockItem: React.FC<DockItemProps> = React.memo(({ mouseX, app, isOpen, isActive, isMobile, onClick }) => {
   const itemRef = useRef<HTMLDivElement>(null);
-  const [isBouncing, setIsBouncing] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const [isHovered, setIsHovered] = useState(false);
 
   const distance = useTransform(mouseX, (val) => {
@@ -109,26 +112,28 @@ const DockItem: React.FC<DockItemProps> = React.memo(({ mouseX, app, isOpen, isA
     return val - bounds.x - bounds.width / 2;
   });
 
-  // Authentic macOS continuous Gaussian-like magnification
-  const widthSync = useTransform(distance, [-130, 0, 130], [50, 78, 50]);
-  const width = useSpring(widthSync, { mass: 0.1, stiffness: 240, damping: 18 });
+  // Authentic macOS continuous Gaussian-like magnification on desktop
+  const widthSync = useTransform(distance, [-130, 0, 130], isMobile ? [36, 36, 36] : [50, 78, 50]);
+  const widthSpring = useSpring(widthSync, { mass: 0.1, stiffness: 240, damping: 18 });
+  const width = isMobile ? 36 : widthSpring;
 
   const handleClick = () => {
-    setIsBouncing(true);
-    setTimeout(() => setIsBouncing(false), 1100);
+    if (buttonRef.current) {
+      triggerMacDockBounce(buttonRef.current);
+    }
     onClick();
   };
 
   return (
     <div
       ref={itemRef}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="relative flex flex-col items-center justify-end"
+      onMouseEnter={() => !isMobile && setIsHovered(true)}
+      onMouseLeave={() => !isMobile && setIsHovered(false)}
+      className="relative flex flex-col items-center justify-end flex-shrink-0"
     >
-      {/* Authentic macOS Tooltip with Pointer Arrow */}
+      {/* Authentic macOS Tooltip with Pointer Arrow (Desktop Only) */}
       <AnimatePresence>
-        {isHovered && (
+        {!isMobile && isHovered && (
           <motion.div
             initial={{ opacity: 0, y: 4, scale: 0.94 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -143,17 +148,12 @@ const DockItem: React.FC<DockItemProps> = React.memo(({ mouseX, app, isOpen, isA
         )}
       </AnimatePresence>
 
-      {/* Dock Icon Button with Authentic Multi-stage macOS Launch Bounce */}
+      {/* Dock Icon Button with Authentic GSAP Multi-stage macOS Launch Bounce */}
       <motion.button
+        ref={buttonRef}
         style={{ width, height: width }}
-        animate={isBouncing ? { y: [0, -28, 0, -14, 0, -6, 0] } : { y: 0 }}
-        transition={
-          isBouncing
-            ? { duration: 1.05, ease: [0.34, 1.56, 0.64, 1] }
-            : { duration: 0.15 }
-        }
         onClick={handleClick}
-        className="relative flex items-center justify-center filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.55)] hover:brightness-110 active:brightness-95 transition-filter select-none p-0.5 cursor-pointer focus:outline-none"
+        className="relative flex items-center justify-center filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.55)] hover:brightness-110 active:brightness-95 transition-filter select-none p-0.5 cursor-pointer focus:outline-none will-change-transform transform-gpu"
         aria-label={app.title}
       >
         <div className="w-full h-full flex items-center justify-center pointer-events-none">
@@ -162,11 +162,11 @@ const DockItem: React.FC<DockItemProps> = React.memo(({ mouseX, app, isOpen, isA
       </motion.button>
 
       {/* Running App Indicator Dot (macOS Sonoma / Sequoia Style) */}
-      <div className="h-2 flex items-center justify-center mt-0.5">
+      <div className="h-1.5 sm:h-2 flex items-center justify-center mt-0.5">
         <span
           className={`rounded-full transition-all duration-200 ${
             isActive
-              ? "w-1.5 h-1.5 bg-white shadow-[0_0_6px_rgba(255,255,255,1)] opacity-100 scale-100"
+              ? "w-1 sm:w-1.5 h-1 sm:h-1.5 bg-white shadow-[0_0_6px_rgba(255,255,255,1)] opacity-100 scale-100"
               : isOpen
               ? "w-1 h-1 bg-white/75 shadow-[0_0_3px_rgba(255,255,255,0.7)] opacity-90 scale-100"
               : "w-1 h-1 bg-transparent opacity-0 scale-50"
@@ -180,6 +180,17 @@ const DockItem: React.FC<DockItemProps> = React.memo(({ mouseX, app, isOpen, isA
 export const Dock: React.FC = () => {
   const { windows, activeAppId, openApp, focusApp, minimizeApp } = useDesktop();
   const mouseX = useMotionValue(Infinity);
+  const [isMobile, setIsMobile] = useState(() => 
+    typeof window !== "undefined" ? window.innerWidth < 640 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleAppClick = (app: DockAppConfig) => {
     if (app.isExternal && app.url) {
@@ -206,9 +217,9 @@ export const Dock: React.FC = () => {
   return (
     <nav
       aria-label="Desktop Dock"
-      className="fixed bottom-2.5 left-1/2 -translate-x-1/2 z-[9990] px-3 py-1.5 mac-dock-glass border border-white/20 rounded-2xl flex items-end gap-2.5 select-none"
-      onMouseMove={(e) => mouseX.set(e.pageX)}
-      onMouseLeave={() => mouseX.set(Infinity)}
+      className="fixed bottom-2 sm:bottom-2.5 left-1/2 -translate-x-1/2 z-[9990] max-w-[calc(100vw-12px)] px-2 sm:px-3 py-1 sm:py-1.5 mac-dock-glass border border-white/20 rounded-2xl flex items-end gap-1.5 sm:gap-2.5 select-none overflow-x-auto scrollbar-none"
+      onMouseMove={(e) => !isMobile && mouseX.set(e.pageX)}
+      onMouseLeave={() => !isMobile && mouseX.set(Infinity)}
     >
       {DOCK_APPS.map((app, index) => {
         const isInternal = !app.isExternal;
@@ -222,7 +233,7 @@ export const Dock: React.FC = () => {
           <React.Fragment key={app.id}>
             {/* Dock separator divider */}
             {isFirstUtility && (
-              <div className="w-[1px] h-10 bg-white/20 mx-1 mb-2 self-center rounded-full" />
+              <div className="w-[1px] h-7 sm:h-10 bg-white/20 mx-0.5 sm:mx-1 mb-1.5 sm:mb-2 self-center rounded-full flex-shrink-0" />
             )}
 
             <DockItem
@@ -230,6 +241,7 @@ export const Dock: React.FC = () => {
               app={app}
               isOpen={isAppOpen}
               isActive={isAppActive}
+              isMobile={isMobile}
               onClick={() => handleAppClick(app)}
             />
           </React.Fragment>

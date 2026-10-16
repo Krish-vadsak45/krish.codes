@@ -89,45 +89,45 @@ export const MailApp: React.FC = React.memo(() => {
         ) : (
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-4 space-y-3">
             {/* Header inputs */}
-            <div className="space-y-2.5 border-b border-white/10 pb-3">
-              <div className="flex items-center gap-3">
-                <span className="text-neutral-300 font-medium w-20">To:</span>
-                <span className="font-semibold text-blue-300 bg-blue-500/15 px-2.5 py-1 rounded-md border border-blue-500/30 font-mono text-[11px]">
+            <div className="space-y-2 sm:space-y-2.5 border-b border-white/10 pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <span className="text-neutral-300 font-medium w-16 sm:w-20 flex-shrink-0">To:</span>
+                <span className="font-semibold text-blue-300 bg-blue-500/15 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md border border-blue-500/30 font-mono text-[10px] sm:text-[11px] truncate inline-block">
                   Krish Vadsak &lt;krish.vadsak45@gmail.com&gt;
                 </span>
               </div>
 
-              <div className="flex items-center gap-3">
-                <span className="text-neutral-300 font-medium w-20">Your Name:</span>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-neutral-300 font-medium w-16 sm:w-20 flex-shrink-0">Name:</span>
                 <input
                   type="text"
                   value={senderName}
                   onChange={(e) => setSenderName(e.target.value)}
                   placeholder="e.g. Alex Tech Lead"
-                  className="flex-1 bg-transparent border-none text-white focus:outline-none placeholder-neutral-400 font-medium"
+                  className="flex-1 bg-transparent border-none text-white focus:outline-none placeholder-neutral-400 font-medium text-xs"
                 />
               </div>
 
-              <div className="flex items-center gap-3">
-                <span className="text-neutral-300 font-medium w-20">Your Email:</span>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-neutral-300 font-medium w-16 sm:w-20 flex-shrink-0">Email:</span>
                 <input
                   type="email"
                   value={senderEmail}
                   onChange={(e) => setSenderEmail(e.target.value)}
                   placeholder="e.g. alex@company.com"
                   required
-                  className="flex-1 bg-transparent border-none text-white focus:outline-none placeholder-neutral-400 font-medium"
+                  className="flex-1 bg-transparent border-none text-white focus:outline-none placeholder-neutral-400 font-medium text-xs"
                 />
               </div>
 
-              <div className="flex items-center gap-3">
-                <span className="text-neutral-300 font-medium w-20">Subject:</span>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-neutral-300 font-medium w-16 sm:w-20 flex-shrink-0">Subject:</span>
                 <input
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="e.g. Collaboration / Full-Stack Engineer Opportunity"
-                  className="flex-1 bg-transparent border-none text-white focus:outline-none placeholder-neutral-400 font-medium"
+                  placeholder="e.g. Collaboration / Hiring"
+                  className="flex-1 bg-transparent border-none text-white focus:outline-none placeholder-neutral-400 font-medium text-xs"
                 />
               </div>
             </div>
@@ -139,13 +139,13 @@ export const MailApp: React.FC = React.memo(() => {
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Hi Krish, I saw your portfolio and would love to chat about..."
                 required
-                className="flex-1 w-full bg-transparent border-none text-neutral-100 focus:outline-none resize-none p-1 placeholder-neutral-400 leading-relaxed font-sans text-xs"
+                className="flex-1 w-full bg-transparent border-none text-neutral-100 focus:outline-none resize-none p-1 placeholder-neutral-400 leading-relaxed font-sans text-xs min-h-[100px]"
               />
             </div>
 
             {/* Social Links Footer */}
-            <div className="pt-2 border-t border-white/10 flex items-center justify-between text-neutral-400 text-[11px]">
-              <span>Direct: krish.vadsak45@gmail.com</span>
+            <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row gap-2 sm:gap-0 items-start sm:items-center justify-between text-neutral-400 text-[10px] sm:text-[11px]">
+              <span className="truncate">Direct: krish.vadsak45@gmail.com</span>
               <div className="flex items-center space-x-3">
                 <a
                   href="https://github.com/Krish-vadsak45"

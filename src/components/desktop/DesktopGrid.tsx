@@ -201,8 +201,8 @@ export const DesktopGrid: React.FC = () => {
       onContextMenu={handleContextMenu}
       className="absolute inset-0 z-0 overflow-hidden select-none"
     >
-      {/* Desktop Shortcut Grid Column */}
-      <div className="absolute top-11 left-4 z-10 flex flex-col space-y-3">
+      {/* Desktop Shortcut Grid Column (Balanced 4x2 on mobile, single column on desktop) */}
+      <div className="absolute top-10 sm:top-11 left-2.5 sm:left-4 z-10 flex flex-col flex-wrap max-h-[380px] sm:max-h-[calc(100dvh-120px)] gap-1.5 sm:gap-3">
         {shortcuts.map((sc) => {
           const isSelected = selectedIds.includes(sc.id);
 
@@ -215,12 +215,16 @@ export const DesktopGrid: React.FC = () => {
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedIds([sc.id]);
+                // On touch/mobile screens, single tap opens the app directly
+                if (typeof window !== "undefined" && window.innerWidth < 768) {
+                  sc.action();
+                }
               }}
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 sc.action();
               }}
-              className={`desktop-shortcut group flex flex-col items-center w-20 p-2 rounded-xl transition-all duration-150 cursor-pointer ${
+              className={`desktop-shortcut group flex flex-col items-center w-[70px] sm:w-20 p-1 sm:p-2 rounded-xl transition-all duration-150 cursor-pointer ${
                 isSelected
                   ? "bg-white/20 ring-1 ring-white/35 backdrop-blur-md shadow-lg"
                   : "hover:bg-white/10 hover:-translate-y-1 hover:shadow-xl"
@@ -230,7 +234,7 @@ export const DesktopGrid: React.FC = () => {
                 {sc.icon}
               </div>
               <span
-                className={`text-[11px] font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] mt-2 text-center leading-tight line-clamp-1 px-1.5 py-0.5 rounded transition-colors duration-150 ${
+                className={`text-[9.5px] sm:text-[11px] font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] mt-1 sm:mt-2 text-center leading-tight line-clamp-2 max-w-[68px] sm:max-w-[78px] px-1 py-0.5 rounded transition-colors duration-150 break-words ${
                   isSelected
                     ? "bg-blue-600 text-white shadow-md shadow-blue-600/40"
                     : "text-white group-hover:text-blue-100"

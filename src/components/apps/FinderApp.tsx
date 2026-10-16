@@ -85,10 +85,53 @@ export const FinderApp: React.FC = React.memo(() => {
         </div>
       </div>
 
+      {/* Mobile Category Pill Bar (Visible on mobile/tablets < md) */}
+      <div className="flex md:hidden overflow-x-auto gap-1.5 p-2 bg-neutral-900/50 border-b border-white/10 select-none scrollbar-none flex-shrink-0">
+        <button
+          onClick={() => setActiveCategory("all")}
+          className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+            activeCategory === "all" ? "bg-blue-600 text-white shadow-sm" : "bg-white/5 text-neutral-300 hover:bg-white/10"
+          }`}
+        >
+          <Folder className="w-3 h-3 text-blue-400" />
+          <span>All Projects</span>
+        </button>
+
+        <button
+          onClick={() => setActiveCategory("ai")}
+          className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+            activeCategory === "ai" ? "bg-blue-600 text-white shadow-sm" : "bg-white/5 text-neutral-300 hover:bg-white/10"
+          }`}
+        >
+          <Sparkles className="w-3 h-3 text-purple-400" />
+          <span>AI & SaaS</span>
+        </button>
+
+        <button
+          onClick={() => setActiveCategory("fullstack")}
+          className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+            activeCategory === "fullstack" ? "bg-blue-600 text-white shadow-sm" : "bg-white/5 text-neutral-300 hover:bg-white/10"
+          }`}
+        >
+          <Layers className="w-3 h-3 text-emerald-400" />
+          <span>Full Stack</span>
+        </button>
+
+        <button
+          onClick={() => { setActiveCategory("certificates"); setSelectedCertIndex(0); }}
+          className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+            activeCategory === "certificates" ? "bg-amber-600 text-white shadow-sm" : "bg-white/5 text-neutral-300 hover:bg-white/10"
+          }`}
+        >
+          <Award className="w-3 h-3 text-amber-400" />
+          <span>Certificates ({certificates.length})</span>
+        </button>
+      </div>
+
       {/* Main Finder Body: Sidebar + File Area + Inspector */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Finder Sidebar */}
-        <div className="w-48 bg-neutral-900/40 border-r border-white/10 p-3 hidden md:flex flex-col space-y-4 select-none text-xs">
+        <div className="w-48 bg-neutral-900/40 border-r border-white/10 p-3 hidden md:flex flex-col space-y-4 select-none text-xs flex-shrink-0">
           <div>
             <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-2">
               Favorites
@@ -160,18 +203,18 @@ export const FinderApp: React.FC = React.memo(() => {
         </div>
 
         {/* Center Projects / Certificates Browser */}
-        <div className="flex-1 p-4 mac-scroll-viewport border-r border-white/10">
+        <div className="flex-1 p-3 sm:p-4 mac-scroll-viewport border-r border-white/10">
           {isCertsView ? (
             /* Certificates Browser */
             viewMode === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
                 {certificates.map((cert, idx) => {
                   const isSelected = idx === selectedCertIndex;
                   return (
                     <div
                       key={cert.id}
                       onClick={() => setSelectedCertIndex(idx)}
-                      className={`mac-cert-card p-3.5 rounded-xl border transition-colors duration-150 cursor-pointer flex flex-col justify-between ${
+                      className={`mac-cert-card p-3 sm:p-3.5 rounded-xl border transition-colors duration-150 cursor-pointer flex flex-col justify-between ${
                         isSelected
                           ? "bg-amber-600/25 border-amber-400 shadow-xl shadow-amber-500/20 ring-1 ring-amber-400/40"
                           : "bg-neutral-900/60 hover:bg-neutral-900/90 border-white/15 hover:border-amber-400/30"
@@ -180,7 +223,7 @@ export const FinderApp: React.FC = React.memo(() => {
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <span className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300">
-                            <Award className="w-5 h-5" />
+                            <Award className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                           </span>
                           <span className="text-[10px] text-neutral-300 bg-white/10 px-2 py-0.5 rounded border border-white/15 font-mono uppercase">
                             {cert.fileType}
@@ -198,13 +241,13 @@ export const FinderApp: React.FC = React.memo(() => {
                       </div>
 
                       <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[10px]">
-                        <span className="text-amber-400 font-medium truncate max-w-[140px]">{cert.badgeText}</span>
+                        <span className="text-amber-400 font-medium truncate max-w-[130px]">{cert.badgeText}</span>
                         <a
                           href={cert.driveUrl}
                           target="_blank"
                           rel="noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="text-neutral-400 hover:text-white flex items-center gap-1"
+                          className="text-neutral-400 hover:text-white flex items-center gap-1 p-1"
                         >
                           <span>Drive</span>
                           <ExternalLink className="w-3 h-3" />
@@ -242,14 +285,14 @@ export const FinderApp: React.FC = React.memo(() => {
           ) : (
             /* Projects Browser */
             viewMode === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
                 {filteredProjects.map((p, idx) => {
                   const isSelected = p.name === currentProject.name;
                   return (
                     <div
                       key={idx}
                       onClick={() => setSelectedProjectIndex(projects.findIndex(item => item.name === p.name))}
-                      className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                      className={`p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
                         isSelected
                           ? "bg-blue-600/20 border-blue-400 shadow-xl shadow-blue-500/25 ring-1 ring-blue-400/40"
                           : "mac-card-glass hover:border-white/30"
@@ -271,12 +314,41 @@ export const FinderApp: React.FC = React.memo(() => {
                         </p>
                       </div>
 
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {p.tech_stack.slice(0, 3).map((tech, tIdx) => (
-                          <span key={tIdx} className="text-[10px] bg-neutral-800 text-neutral-200 border border-white/10 px-2 py-0.5 rounded font-medium">
-                            {tech}
-                          </span>
-                        ))}
+                      <div>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {p.tech_stack.slice(0, 3).map((tech, tIdx) => (
+                            <span key={tIdx} className="text-[10px] bg-neutral-800 text-neutral-200 border border-white/10 px-2 py-0.5 rounded font-medium">
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Direct Quick Actions */}
+                        <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedProjectIndex(projects.findIndex(item => item.name === p.name));
+                              openApp("safari");
+                            }}
+                            className="flex-1 py-1.5 px-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-[11px] flex items-center justify-center gap-1 shadow-sm transition-colors cursor-pointer"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            <span>Demo</span>
+                          </button>
+                          {p.source_code_link && (
+                            <a
+                              href={p.source_code_link}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="py-1.5 px-2.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-medium flex items-center gap-1 border border-white/15 transition-colors"
+                            >
+                              <Github className="w-3 h-3" />
+                              <span>Code</span>
+                            </a>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

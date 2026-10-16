@@ -333,9 +333,29 @@ export const NotesApp: React.FC = React.memo(() => {
 
   return (
     <WindowFrame id="notes">
-      <div className="flex-1 flex overflow-hidden text-xs">
-        {/* Left Notes List */}
-        <div className="w-64 bg-neutral-900/60 border-r border-white/10 p-2 overflow-y-auto space-y-1 select-none mac-scroll-viewport">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden text-xs">
+        {/* Mobile Notes Horizontal Selector (Visible on mobile < md) */}
+        <div className="flex md:hidden overflow-x-auto gap-1.5 p-2 bg-neutral-900/60 border-b border-white/10 select-none scrollbar-none flex-shrink-0">
+          {NOTES.map((note) => {
+            const isSelected = note.id === activeNote.id;
+            return (
+              <button
+                key={note.id}
+                onClick={() => setActiveNoteId(note.id)}
+                className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                  isSelected
+                    ? "bg-amber-500/30 text-amber-200 border border-amber-500/50 shadow-sm"
+                    : "bg-white/5 text-neutral-300 hover:bg-white/10"
+                }`}
+              >
+                <span>{note.title.split(" (")[0]}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Left Notes List (Desktop Only) */}
+        <div className="w-64 bg-neutral-900/60 border-r border-white/10 p-2 overflow-y-auto space-y-1 select-none mac-scroll-viewport hidden md:block flex-shrink-0">
           <div className="px-2 py-1 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">
             Notes ({NOTES.length})
           </div>
@@ -360,7 +380,7 @@ export const NotesApp: React.FC = React.memo(() => {
         </div>
 
         {/* Right Note Reader */}
-        <div className="flex-1 p-6 overflow-y-auto bg-neutral-950/70 mac-scroll-viewport">
+        <div className="flex-1 p-3.5 sm:p-6 overflow-y-auto bg-neutral-950/70 mac-scroll-viewport">
           <div className="max-w-xl mx-auto">{activeNote.content}</div>
         </div>
       </div>

@@ -21,6 +21,40 @@
   50%       { opacity: 0.55; transform: scale(1.08); }
 }
 
+/* ===== Code & Chill Design System Keyframes & Tokens ===== */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes halo {
+  0% { opacity: 0.55; transform: scale(1); }
+  70%, 100% { opacity: 0; transform: scale(2.6); }
+}
+
+@keyframes waterFill {
+  0% { background-position: 0 0; }
+  to { background-position: 0 100%; }
+}
+
+.animate-halo {
+  animation: 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite halo;
+}
+
+.marquee-row {
+  --marquee-fade: 10%;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--marquee-fade), #000 calc(100% - var(--marquee-fade)), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 var(--marquee-fade), #000 calc(100% - var(--marquee-fade)), transparent 100%);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* ===== Gradients ===== */
 .green-pink-gradient {
   background: linear-gradient(90.13deg, #00cea8 1.9%, #bf61ff 97.5%);
@@ -51,6 +85,13 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Code & Chill Palette */
+  --accent: #e8e4dc;
+  --accent-hover: #ffffff;
+  --surface-lit: #cfc9bc;
+  --surface-lit-ink: #16150f;
+  --surface-lit-ink-soft: #2c2a22;
 }
 
 *, *::before, *::after {

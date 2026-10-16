@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useDesktop } from "../../context/DesktopContext";
 import { AppId } from "../../types/desktop";
@@ -25,6 +25,21 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
   const [trafficHovered, setTrafficHovered] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => 
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const frameRef = useRef<HTMLDivElement>(null);
+  const lastPosRef = useRef<{ x: number; y: number } | null>(null);
+  const lastSizeRef = useRef<{ width: number; height: number; x: number; y: number } | null>(null);
 
   const resizeRef = useRef<{
     direction: string;
@@ -50,7 +65,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
 
   // Smooth 120fps Drag Handler with direct pointer tracking (avoids Framer Motion jump/cutting)
   const handleTitlePointerDown = (e: React.PointerEvent) => {
-    if (win.isMaximized || isResizing) return;
+    if (win.isMaximized || isResizing || isMobile) return;
     if ((e.target as HTMLElement).closest("button")) return;
 
     e.preventDefault();
@@ -75,12 +90,17 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
       if (pendingDragRaf === null) {
         pendingDragRaf = requestAnimationFrame(() => {
           pendingDragRaf = null;
-          if (!dragRef.current) return;
+          if (!dragRef.current || !frameRef.current) return;
           const dx = latestClientX - dragRef.current.startX;
           const dy = latestClientY - dragRef.current.startY;
           const newX = Math.max(-win.size.width + 120, Math.min(window.innerWidth - 80, dragRef.current.initX + dx));
           const newY = Math.max(30, Math.min(window.innerHeight - 80, dragRef.current.initY + dy));
-          updatePosition(id, { x: newX, y: newY });
+          
+          lastPosRef.current = { x: newX, y: newY };
+          const actualDx = newX - dragRef.current.initX;
+          const actualDy = newY - dragRef.current.initY;
+          // GPU Composited translation - bypasses React re-render & layout reflow
+          frameRef.current.style.transform = `translate3d(${actualDx}px, ${actualDy}px, 0)`;
         });
       }
     };
@@ -94,6 +114,14 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
       dragRef.current = null;
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
+
+      if (frameRef.current) {
+        frameRef.current.style.transform = "";
+      }
+      if (lastPosRef.current) {
+        updatePosition(id, lastPosRef.current);
+        lastPosRef.current = null;
+      }
     };
 
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
@@ -105,7 +133,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
     e: React.PointerEvent,
     direction: "e" | "s" | "se" | "w" | "sw"
   ) => {
-    if (win.isMaximized) return;
+    if (win.isMaximized || isMobile) return;
     e.preventDefault();
     e.stopPropagation();
     setIsResizing(true);
@@ -132,7 +160,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
       if (pendingResizeRaf === null) {
         pendingResizeRaf = requestAnimationFrame(() => {
           pendingResizeRaf = null;
-          if (!resizeRef.current) return;
+          if (!resizeRef.current || !frameRef.current) return;
           const { direction, startX, startY, initialWidth, initialHeight, initialX, initialY } =
             resizeRef.current;
 
@@ -163,11 +191,12 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
             }
           }
 
-          updateSizeAndPosition(
-            id,
-            { width: newWidth, height: newHeight },
-            { x: newX, y: newY }
-          );
+          lastSizeRef.current = { width: newWidth, height: newHeight, x: newX, y: newY };
+          frameRef.current.style.width = `${newWidth}px`;
+          frameRef.current.style.height = `${newHeight}px`;
+          if (newX !== initialX) {
+            frameRef.current.style.left = `${newX}px`;
+          }
         });
       }
     };
@@ -181,6 +210,15 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
       resizeRef.current = null;
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
+
+      if (lastSizeRef.current) {
+        updateSizeAndPosition(
+          id,
+          { width: lastSizeRef.current.width, height: lastSizeRef.current.height },
+          { x: lastSizeRef.current.x, y: lastSizeRef.current.y }
+        );
+        lastSizeRef.current = null;
+      }
     };
 
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
@@ -189,8 +227,33 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
 
   const isInteracting = isDragging || isResizing;
 
+  const targetLeft = isMobile
+    ? 4
+    : win.isMaximized
+    ? 8
+    : Math.max(8, Math.min(typeof window !== "undefined" ? window.innerWidth - win.size.width - 8 : 8, win.position.x));
+
+  const targetTop = isMobile
+    ? 32
+    : win.isMaximized
+    ? 34
+    : Math.max(34, Math.min(typeof window !== "undefined" ? window.innerHeight - win.size.height - 80 : 34, win.position.y));
+
+  const targetWidth = isMobile
+    ? "calc(100vw - 8px)"
+    : win.isMaximized
+    ? "calc(100vw - 16px)"
+    : Math.min(win.size.width, typeof window !== "undefined" ? window.innerWidth - 16 : win.size.width);
+
+  const targetHeight = isMobile
+    ? "calc(100dvh - 100px)"
+    : win.isMaximized
+    ? "calc(100vh - 110px)"
+    : Math.min(win.size.height, typeof window !== "undefined" ? window.innerHeight - 80 : win.size.height);
+
   return (
     <motion.div
+      ref={frameRef}
       // Authentic macOS Window Open Animation with Apple Spring Physics
       initial={
         win.openSource === "desktop"
@@ -201,10 +264,10 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
         opacity: 1,
         scale: 1,
         y: 0,
-        left: win.isMaximized ? 8 : win.position.x,
-        top: win.isMaximized ? 34 : win.position.y,
-        width: win.isMaximized ? "calc(100vw - 16px)" : win.size.width,
-        height: win.isMaximized ? "calc(100vh - 110px)" : win.size.height,
+        left: targetLeft,
+        top: targetTop,
+        width: targetWidth,
+        height: targetHeight,
         transition: isInteracting
           ? { duration: 0 }
           : {
@@ -237,7 +300,8 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
       style={{
         position: "fixed",
         zIndex: win.zIndex,
-        willChange: isInteracting ? "left, top, width, height" : "auto",
+        contain: "layout style",
+        willChange: isInteracting ? "transform, width, height" : "auto",
         transformOrigin: isMinimizing
           ? "center bottom"
           : win.openSource === "desktop"
@@ -254,8 +318,8 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
       {/* Title Bar - Drag Handle with 3D Specular Light */}
       <div
         onPointerDown={handleTitlePointerDown}
-        onDoubleClick={() => toggleMaximizeApp(id)}
-        className={`h-10 px-3.5 flex items-center justify-between border-b transition-colors cursor-default select-none relative ${
+        onDoubleClick={() => !isMobile && toggleMaximizeApp(id)}
+        className={`h-9 sm:h-10 px-2.5 sm:px-3.5 flex items-center justify-between border-b transition-colors cursor-default select-none relative ${
           isActive 
             ? "bg-gradient-to-b from-white/12 via-neutral-900/80 to-neutral-950/90 border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]" 
             : "bg-neutral-900/60 border-white/5"
@@ -263,7 +327,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
       >
         {/* macOS Traffic Lights with Authentic Inactive Dimming & Hover Glyphs */}
         <div
-          className="flex items-center space-x-2 w-16"
+          className="flex items-center space-x-1.5 sm:space-x-2 w-14 sm:w-16"
           onMouseEnter={() => setTrafficHovered(true)}
           onMouseLeave={() => setTrafficHovered(false)}
           onPointerDown={(e) => e.stopPropagation()}
@@ -274,14 +338,14 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
               e.stopPropagation();
               closeApp(id);
             }}
-            className={`w-3 h-3 rounded-full flex items-center justify-center text-neutral-950 focus:outline-none transition-all duration-150 hover:scale-110 active:scale-90 cursor-pointer shadow-sm border ${
-              isActive || trafficHovered
+            className={`w-3.5 h-3.5 sm:w-3 sm:h-3 rounded-full flex items-center justify-center text-neutral-950 focus:outline-none transition-all duration-150 hover:scale-110 active:scale-90 cursor-pointer shadow-sm border ${
+              isActive || trafficHovered || isMobile
                 ? "bg-[#ff5f56] border-[#e0443e]"
                 : "bg-neutral-600/40 border-neutral-600/50"
             }`}
             title="Close"
           >
-            <span className={`text-[8px] font-bold leading-none transition-opacity duration-150 ${trafficHovered ? "opacity-100 text-neutral-900" : "opacity-0"}`}>
+            <span className={`text-[8px] font-bold leading-none transition-opacity duration-150 ${trafficHovered || isMobile ? "opacity-100 text-neutral-900" : "opacity-0"}`}>
               ✕
             </span>
           </button>
@@ -292,14 +356,14 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
               e.stopPropagation();
               minimizeApp(id);
             }}
-            className={`w-3 h-3 rounded-full flex items-center justify-center text-neutral-950 focus:outline-none transition-all duration-150 hover:scale-110 active:scale-90 cursor-pointer shadow-sm border ${
-              isActive || trafficHovered
+            className={`w-3.5 h-3.5 sm:w-3 sm:h-3 rounded-full flex items-center justify-center text-neutral-950 focus:outline-none transition-all duration-150 hover:scale-110 active:scale-90 cursor-pointer shadow-sm border ${
+              isActive || trafficHovered || isMobile
                 ? "bg-[#ffbd2e] border-[#dea123]"
                 : "bg-neutral-600/40 border-neutral-600/50"
             }`}
             title="Minimize"
           >
-            <span className={`text-[10px] font-bold leading-none pb-0.5 transition-opacity duration-150 ${trafficHovered ? "opacity-100 text-neutral-900" : "opacity-0"}`}>
+            <span className={`text-[10px] font-bold leading-none pb-0.5 transition-opacity duration-150 ${trafficHovered || isMobile ? "opacity-100 text-neutral-900" : "opacity-0"}`}>
               −
             </span>
           </button>
@@ -310,21 +374,21 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
               e.stopPropagation();
               toggleMaximizeApp(id);
             }}
-            className={`w-3 h-3 rounded-full flex items-center justify-center text-neutral-950 focus:outline-none transition-all duration-150 hover:scale-110 active:scale-90 cursor-pointer shadow-sm border ${
-              isActive || trafficHovered
+            className={`w-3.5 h-3.5 sm:w-3 sm:h-3 rounded-full flex items-center justify-center text-neutral-950 focus:outline-none transition-all duration-150 hover:scale-110 active:scale-90 cursor-pointer shadow-sm border ${
+              isActive || trafficHovered || isMobile
                 ? "bg-[#27c93f] border-[#1aab29]"
                 : "bg-neutral-600/40 border-neutral-600/50"
             }`}
             title="Zoom / Maximize"
           >
-            <span className={`text-[7px] font-bold leading-none transition-opacity duration-150 ${trafficHovered ? "opacity-100 text-neutral-900" : "opacity-0"}`}>
+            <span className={`text-[7px] font-bold leading-none transition-opacity duration-150 ${trafficHovered || isMobile ? "opacity-100 text-neutral-900" : "opacity-0"}`}>
               +
             </span>
           </button>
         </div>
 
         {/* Window Title / Extra Header Content */}
-        <div className="flex-1 flex items-center justify-center px-4 overflow-hidden pointer-events-none">
+        <div className="flex-1 flex items-center justify-center px-2 sm:px-4 overflow-hidden pointer-events-none">
           {headerContent ? (
             headerContent
           ) : (
@@ -339,7 +403,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
         </div>
 
         {/* Spacer to balance traffic lights */}
-        <div className="w-16"></div>
+        <div className="w-14 sm:w-16"></div>
       </div>
 
       {/* Window Content */}
@@ -352,7 +416,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ id, children, headerCo
       </div>
 
       {/* ===== macOS Interactive Resize Edge Handles ===== */}
-      {!win.isMaximized && (
+      {!win.isMaximized && !isMobile && (
         <>
           {/* Right Edge Resize Handle */}
           <div

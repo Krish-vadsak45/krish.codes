@@ -35,6 +35,9 @@ export default defineConfig({
             if (id.includes('framer-motion')) {
               return 'vendor-motion';
             }
+            if (id.includes('gsap')) {
+              return 'vendor-gsap';
+            }
             if (id.includes('lucide-react')) {
               return 'vendor-icons';
             }

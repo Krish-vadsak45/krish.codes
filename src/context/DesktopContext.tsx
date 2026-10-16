@@ -15,23 +15,28 @@ interface DesktopContextType {
   updateSizeAndPosition: (id: AppId, size: { width: number; height: number }, pos: { x: number; y: number }) => void;
   setIsSpotlightOpen: (open: boolean) => void;
   toggleSpotlight: () => void;
+  viewMode: 'cinematic' | 'desktop';
+  setViewMode: (mode: 'cinematic' | 'desktop') => void;
+  toggleViewMode: () => void;
 }
 
-const DEFAULT_WINDOWS: Record<AppId, WindowState> = {
+const isMobileClient = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+
+const getInitialWindows = (): Record<AppId, WindowState> => ({
   finder: {
     id: "finder",
     title: "Finder — Projects & Works",
     isOpen: true,
     isMinimized: false,
-    isMaximized: false,
-    zIndex: 10,
-    position: { x: 40, y: 50 },
-    size: { width: 860, height: 560 },
+    isMaximized: isMobileClient,
+    zIndex: isMobileClient ? 20 : 10,
+    position: isMobileClient ? { x: 6, y: 34 } : { x: 40, y: 50 },
+    size: isMobileClient ? { width: 360, height: 500 } : { width: 860, height: 560 },
   },
   terminal: {
     id: "terminal",
     title: "Terminal — zsh (krish@macbook)",
-    isOpen: true,
+    isOpen: !isMobileClient,
     isMinimized: false,
     isMaximized: false,
     zIndex: 20,
@@ -43,7 +48,7 @@ const DEFAULT_WINDOWS: Record<AppId, WindowState> = {
     title: "Safari — Project Inspector",
     isOpen: false,
     isMinimized: false,
-    isMaximized: false,
+    isMaximized: isMobileClient,
     zIndex: 15,
     position: { x: 80, y: 60 },
     size: { width: 900, height: 580 },
@@ -53,7 +58,7 @@ const DEFAULT_WINDOWS: Record<AppId, WindowState> = {
     title: "System Settings — Tech Stack & Skills",
     isOpen: false,
     isMinimized: false,
-    isMaximized: false,
+    isMaximized: isMobileClient,
     zIndex: 12,
     position: { x: 100, y: 70 },
     size: { width: 800, height: 520 },
@@ -63,7 +68,7 @@ const DEFAULT_WINDOWS: Record<AppId, WindowState> = {
     title: "Notes — About Krish",
     isOpen: false,
     isMinimized: false,
-    isMaximized: false,
+    isMaximized: isMobileClient,
     zIndex: 14,
     position: { x: 120, y: 80 },
     size: { width: 760, height: 500 },
@@ -73,20 +78,25 @@ const DEFAULT_WINDOWS: Record<AppId, WindowState> = {
     title: "Mail — Contact Krish",
     isOpen: false,
     isMinimized: false,
-    isMaximized: false,
+    isMaximized: isMobileClient,
     zIndex: 16,
     position: { x: 160, y: 100 },
     size: { width: 680, height: 480 },
   },
-};
+});
 
 const DesktopContext = createContext<DesktopContextType | undefined>(undefined);
 
 export const DesktopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [windows, setWindows] = useState<Record<AppId, WindowState>>(DEFAULT_WINDOWS);
-  const [activeAppId, setActiveAppId] = useState<AppId | null>("terminal");
+  const [windows, setWindows] = useState<Record<AppId, WindowState>>(getInitialWindows);
+  const [activeAppId, setActiveAppId] = useState<AppId | null>(isMobileClient ? "finder" : "terminal");
   const topZIndexRef = useRef(25);
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'cinematic' | 'desktop'>('cinematic');
+
+  const toggleViewMode = useCallback(() => {
+    setViewMode((prev) => (prev === 'cinematic' ? 'desktop' : 'cinematic'));
+  }, []);
 
   // Keyboard shortcut for Spotlight (Cmd+K / Ctrl+K) and Escape
   useEffect(() => {
@@ -261,6 +271,9 @@ export const DesktopProvider: React.FC<{ children: React.ReactNode }> = ({ child
     updateSizeAndPosition,
     setIsSpotlightOpen,
     toggleSpotlight,
+    viewMode,
+    setViewMode,
+    toggleViewMode,
   }), [
     windows,
     activeAppId,
@@ -274,6 +287,8 @@ export const DesktopProvider: React.FC<{ children: React.ReactNode }> = ({ child
     updateSize,
     updateSizeAndPosition,
     toggleSpotlight,
+    viewMode,
+    toggleViewMode,
   ]);
 
   return (

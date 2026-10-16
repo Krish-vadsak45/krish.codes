@@ -221,9 +221,68 @@ export const SettingsApp: React.FC = () => {
 
   return (
     <WindowFrame id="settings">
-      <div className="flex-1 flex overflow-hidden text-xs relative">
-        {/* Left Settings Sidebar */}
-        <div className="w-60 bg-neutral-900/70 border-r border-white/10 p-3 flex flex-col justify-between select-none overflow-y-auto">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden text-xs relative">
+        {/* Mobile Category Pill Bar (Visible on mobile/tablets < md) */}
+        <div className="flex md:hidden overflow-x-auto gap-1.5 p-2 bg-neutral-900/60 border-b border-white/10 select-none scrollbar-none flex-shrink-0">
+          <button
+            onClick={() => setActiveTab("overview")}
+            className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+              activeTab === "overview" ? "bg-blue-600 text-white shadow-sm" : "bg-white/5 text-neutral-300 hover:bg-white/10"
+            }`}
+          >
+            <span>Overview</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("leetcode")}
+            className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+              activeTab === "leetcode" ? "bg-amber-600 text-white shadow-sm" : "bg-white/5 text-neutral-300 hover:bg-white/10"
+            }`}
+          >
+            <div className="w-3.5 h-3.5">
+              <LeetCodeMacIcon />
+            </div>
+            <span>LeetCode (217)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("github")}
+            className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+              activeTab === "github" ? "bg-neutral-800 text-white shadow-sm" : "bg-white/5 text-neutral-300 hover:bg-white/10"
+            }`}
+          >
+            <div className="w-3.5 h-3.5">
+              <GithubMacIcon />
+            </div>
+            <span>GitHub (575)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("certificates")}
+            className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+              activeTab === "certificates" ? "bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-sm" : "bg-white/5 text-neutral-300 hover:bg-white/10"
+            }`}
+          >
+            <Award className="w-3.5 h-3.5 text-amber-400" />
+            <span>Certificates ({certificates.length})</span>
+          </button>
+
+          {skillCategories.map((cat, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveTab(cat.category)}
+              className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                activeTab === cat.category ? "bg-blue-600 text-white shadow-sm" : "bg-white/5 text-neutral-300 hover:bg-white/10"
+              }`}
+            >
+              {CATEGORY_ICONS[cat.category] || <Cpu className="w-3 h-3" />}
+              <span>{cat.category}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Left Settings Sidebar (Desktop Only) */}
+        <div className="w-60 bg-neutral-900/70 border-r border-white/10 p-3 hidden md:flex flex-col justify-between select-none overflow-y-auto flex-shrink-0">
           <div className="space-y-4">
             {/* User Profile Card */}
             <div 
@@ -352,13 +411,13 @@ export const SettingsApp: React.FC = () => {
         </div>
 
         {/* Right Settings Detail Panel */}
-        <div className="flex-1 p-6 mac-scroll-viewport bg-[#0c0d12] border-l border-white/5 space-y-6">
+        <div className="flex-1 p-3.5 sm:p-6 mac-scroll-viewport bg-[#0c0d12] border-l-0 md:border-l border-white/5 space-y-4 sm:space-y-6">
           {/* TAB 1: OVERVIEW */}
           {activeTab === "overview" && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-white">System Profile Overview</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">System Profile Overview</h2>
                   <div className="flex items-center gap-2">
                     <a
                       href={developerProfile.github.url}
@@ -380,65 +439,65 @@ export const SettingsApp: React.FC = () => {
                     </a>
                   </div>
                 </div>
-                <p className="text-neutral-300 text-xs mt-1">
+                <p className="text-neutral-300 text-xs mt-1 leading-relaxed">
                   Full-Stack Software Engineer specializing in scalable Next.js platforms, event-driven backends, and algorithmic problem solving.
                 </p>
               </div>
 
               {/* Big KPI Metrics Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
                 <div 
                   onClick={() => setActiveTab("leetcode")}
-                  className="p-3.5 rounded-xl mac-card-glass border border-amber-500/30 hover:border-amber-400 transition-all cursor-pointer group"
+                  className="p-3 sm:p-3.5 rounded-xl mac-card-glass border border-amber-500/30 hover:border-amber-400 transition-all cursor-pointer group"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-neutral-400">LeetCode Solved</span>
-                    <Trophy className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                  <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                    <span className="text-[11px] sm:text-xs text-neutral-400">LeetCode</span>
+                    <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 group-hover:scale-110 transition-transform" />
                   </div>
-                  <div className="text-2xl font-extrabold text-amber-300">217</div>
-                  <div className="text-[10px] text-neutral-300 mt-1 flex items-center gap-1">
-                    <Award className="w-3 h-3 text-amber-400" />
-                    <span>50 Days Badge 2025</span>
+                  <div className="text-xl sm:text-2xl font-extrabold text-amber-300">217</div>
+                  <div className="text-[10px] text-neutral-300 mt-1 flex items-center gap-1 truncate">
+                    <Award className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                    <span className="truncate">50 Days Badge 2025</span>
                   </div>
                 </div>
 
                 <div 
                   onClick={() => setActiveTab("github")}
-                  className="p-3.5 rounded-xl mac-card-glass border border-blue-500/30 hover:border-blue-400 transition-all cursor-pointer group"
+                  className="p-3 sm:p-3.5 rounded-xl mac-card-glass border border-blue-500/30 hover:border-blue-400 transition-all cursor-pointer group"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-neutral-400">GitHub Activity</span>
-                    <GitCommit className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
+                  <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                    <span className="text-[11px] sm:text-xs text-neutral-400">GitHub</span>
+                    <GitCommit className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400 group-hover:scale-110 transition-transform" />
                   </div>
-                  <div className="text-2xl font-extrabold text-blue-300">575</div>
-                  <div className="text-[10px] text-neutral-300 mt-1">
+                  <div className="text-xl sm:text-2xl font-extrabold text-blue-300">575</div>
+                  <div className="text-[10px] text-neutral-300 mt-1 truncate">
                     Contributions · 14 Repos
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-xl mac-card-glass border border-emerald-500/30">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-neutral-400">Primary Codebase</span>
-                    <Code2 className="w-4 h-4 text-emerald-400" />
+                <div className="p-3 sm:p-3.5 rounded-xl mac-card-glass border border-emerald-500/30">
+                  <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                    <span className="text-[11px] sm:text-xs text-neutral-400 truncate">Primary Stack</span>
+                    <Code2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 flex-shrink-0" />
                   </div>
-                  <div className="text-2xl font-extrabold text-emerald-300">TypeScript</div>
-                  <div className="text-[10px] text-neutral-300 mt-1">
-                    78.9% of total production code
+                  <div className="text-base sm:text-lg md:text-xl font-extrabold text-emerald-300 truncate">TypeScript</div>
+                  <div className="text-[10px] text-neutral-300 mt-1 truncate">
+                    78.9% of code
                   </div>
                 </div>
 
                 <div 
                   onClick={() => setActiveTab("certificates")}
-                  className="p-3.5 rounded-xl mac-card-glass border border-orange-500/30 hover:border-orange-400 transition-all cursor-pointer group"
+                  className="p-3 sm:p-3.5 rounded-xl mac-card-glass border border-orange-500/30 hover:border-orange-400 transition-all cursor-pointer group"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-neutral-400">Certificates & Badges</span>
-                    <Award className="w-4 h-4 text-orange-400 group-hover:scale-110 transition-transform" />
+                  <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                    <span className="text-[11px] sm:text-xs text-neutral-400">Certificates</span>
+                    <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-400 group-hover:scale-110 transition-transform" />
                   </div>
-                  <div className="text-2xl font-extrabold text-orange-300">{certificates.length} Verified</div>
-                  <div className="text-[10px] text-neutral-300 mt-1 flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                    <span>NASA, AWS, IBM, FCC</span>
+                  <div className="text-xl sm:text-2xl font-extrabold text-orange-300">{certificates.length} Verified</div>
+                  <div className="text-[10px] text-neutral-300 mt-1 flex items-center gap-1 truncate">
+                    <ShieldCheck className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                    <span className="truncate">NASA, AWS, IBM, FCC</span>
                   </div>
                 </div>
               </div>

@@ -225,7 +225,7 @@ export const SpotlightModal: React.FC = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed inset-0 z-[10010] flex items-start justify-center pt-24 bg-black/50 backdrop-blur-sm select-none"
+          className="fixed inset-0 z-[10010] flex items-start justify-center pt-10 sm:pt-24 px-3 sm:px-4 bg-black/60 backdrop-blur-sm select-none"
           onClick={() => setIsSpotlightOpen(false)}
         >
           <motion.div
@@ -237,8 +237,8 @@ export const SpotlightModal: React.FC = () => {
             className="w-full max-w-xl mac-glass border border-white/20 rounded-2xl shadow-2xl overflow-hidden ring-1 ring-white/10 gpu-accelerated"
           >
             {/* Spotlight Search Header */}
-            <div className="flex items-center px-4 py-3.5 border-b border-white/10 gap-3">
-              <Search className="w-5 h-5 text-neutral-400" />
+            <div className="flex items-center px-3 sm:px-4 py-3 sm:py-3.5 border-b border-white/10 gap-2 sm:gap-3">
+              <Search className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400 flex-shrink-0" />
               <input
                 ref={inputRef}
                 type="text"
@@ -249,12 +249,17 @@ export const SpotlightModal: React.FC = () => {
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder="Spotlight Search..."
-                className="flex-1 bg-transparent border-none text-white text-base focus:outline-none placeholder-neutral-400"
+                className="flex-1 bg-transparent border-none text-white text-sm sm:text-base focus:outline-none placeholder-neutral-400"
               />
-              <div className="flex items-center gap-1.5 text-[11px] font-medium text-neutral-200 bg-white/10 px-2.5 py-1 rounded-md border border-white/20">
-                <Command className="w-3.5 h-3.5 text-neutral-300" />
-                <span>ESC to exit</span>
-              </div>
+              <button
+                onClick={() => setIsSpotlightOpen(false)}
+                className="flex items-center gap-1 text-[11px] font-medium text-neutral-200 bg-white/10 hover:bg-white/20 px-2 sm:px-2.5 py-1 rounded-md border border-white/20 cursor-pointer transition-colors"
+                title="Close Spotlight"
+              >
+                <Command className="w-3.5 h-3.5 text-neutral-300 hidden sm:inline" />
+                <span className="hidden sm:inline">ESC</span>
+                <span className="inline sm:hidden font-bold">✕</span>
+              </button>
             </div>
 
             {/* Results List */}

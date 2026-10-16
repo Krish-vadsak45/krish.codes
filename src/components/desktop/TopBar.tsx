@@ -40,10 +40,12 @@ export const TopBar: React.FC = React.memo(() => {
     closeApp, 
     minimizeApp, 
     toggleMaximizeApp, 
-    toggleSpotlight 
+    toggleSpotlight,
+    toggleViewMode
   } = useDesktop();
   
   const [timeStr, setTimeStr] = useState<string>("");
+  const [timeOnlyStr, setTimeOnlyStr] = useState<string>("");
   const [activeMenu, setActiveMenu] = useState<"apple" | "file" | "terminal" | "window" | "help" | null>(null);
   const [controlCenterOpen, setControlCenterOpen] = useState(false);
 
@@ -60,6 +62,7 @@ export const TopBar: React.FC = React.memo(() => {
         hour12: true,
       };
       setTimeStr(now.toLocaleDateString("en-US", options).replace(",", ""));
+      setTimeOnlyStr(now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }));
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
@@ -222,7 +225,7 @@ export const TopBar: React.FC = React.memo(() => {
         </div>
 
         {/* Current Active App Name */}
-        <span className="font-bold text-white tracking-wide cursor-default transition-all duration-150 pl-0.5 pr-1">
+        <span className="font-bold text-white tracking-wide cursor-default transition-all duration-150 pl-0.5 pr-1 max-w-[90px] sm:max-w-none truncate text-[11px] sm:text-xs">
           {activeAppName}
         </span>
 
@@ -460,10 +463,10 @@ export const TopBar: React.FC = React.memo(() => {
       </div>
 
       {/* Right Tray Indicators */}
-      <div className="flex items-center space-x-2.5 text-neutral-200">
+      <div className="flex items-center space-x-1.5 sm:space-x-2.5 text-neutral-200">
         <button
           onClick={toggleSpotlight}
-          className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-white/10 hover:bg-white/20 active:bg-white/25 border border-white/15 text-white font-medium text-[11px] transition-colors"
+          className="flex items-center gap-1.5 px-1.5 sm:px-2.5 py-0.5 rounded bg-white/10 hover:bg-white/20 active:bg-white/25 border border-white/15 text-white font-medium text-[11px] transition-colors"
           title="Spotlight Search (Cmd+K)"
         >
           <Search className="w-3.5 h-3.5 text-neutral-200" />
@@ -472,11 +475,21 @@ export const TopBar: React.FC = React.memo(() => {
           </span>
         </button>
 
-        <div className="p-1 px-1.5 rounded hover:bg-white/10 transition-colors">
+        {/* Switch to 3D Cinematic Hero Mode */}
+        <button
+          onClick={toggleViewMode}
+          className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-600/30 to-indigo-600/30 hover:from-blue-600/40 hover:to-indigo-600/40 border border-blue-400/30 text-blue-200 hover:text-white transition-all text-[11px] font-medium shadow-[0_0_12px_rgba(59,130,246,0.2)] active:scale-95"
+          title="Switch to Cinematic 3D Hero Mode"
+        >
+          <Sparkles className="w-3 h-3 text-blue-400 animate-pulse" />
+          <span className="hidden sm:inline">Hero Mode</span>
+        </button>
+
+        <div className="p-1 px-1 sm:px-1.5 rounded hover:bg-white/10 transition-colors">
           <Wifi className="w-3.5 h-3.5 text-neutral-200 hover:text-white cursor-pointer" />
         </div>
 
-        <div className="flex items-center gap-1 text-neutral-200 p-1 px-1.5 rounded hover:bg-white/10">
+        <div className="flex items-center gap-1 text-neutral-200 p-1 px-1 sm:px-1.5 rounded hover:bg-white/10">
           <span className="text-[10px] font-mono hidden sm:inline">100%</span>
           <Battery className="w-3.5 h-3.5 text-emerald-400" />
         </div>
@@ -489,7 +502,7 @@ export const TopBar: React.FC = React.memo(() => {
               e.stopPropagation();
               setControlCenterOpen(!controlCenterOpen);
             }}
-            className="p-1 px-1.5 rounded hover:bg-white/15 active:bg-white/25 transition-colors duration-100"
+            className="p-1 px-1 sm:px-1.5 rounded hover:bg-white/15 active:bg-white/25 transition-colors duration-100"
             aria-label="Control Center"
           >
             <SlidersHorizontal className="w-3.5 h-3.5 text-neutral-200 hover:text-white" />
@@ -503,7 +516,7 @@ export const TopBar: React.FC = React.memo(() => {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -4 }}
                 transition={{ duration: 0.12, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute right-0 top-8 w-64 mac-glass border border-white/20 rounded-xl shadow-2xl p-3 z-[10000] text-white ring-1 ring-white/10 origin-top-right"
+                className="absolute right-0 top-8 w-64 max-w-[calc(100vw-20px)] mac-glass border border-white/20 rounded-xl shadow-2xl p-3 z-[10000] text-white ring-1 ring-white/10 origin-top-right"
               >
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <div className="bg-white/10 p-2.5 rounded-lg flex flex-col justify-between">
@@ -550,8 +563,9 @@ export const TopBar: React.FC = React.memo(() => {
         </div>
 
         {/* Real-time Clock */}
-        <span className="font-medium tracking-tight cursor-default text-neutral-200 hover:text-white">
-          {timeStr || "Mon Oct 11 7:00 PM"}
+        <span className="font-medium tracking-tight cursor-default text-neutral-200 hover:text-white text-[11px] sm:text-xs">
+          <span className="hidden sm:inline">{timeStr || "Mon Oct 11 7:00 PM"}</span>
+          <span className="inline sm:hidden">{timeOnlyStr || "7:00 PM"}</span>
         </span>
       </div>
     </header>

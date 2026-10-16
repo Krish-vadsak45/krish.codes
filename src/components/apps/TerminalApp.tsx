@@ -19,8 +19,8 @@ export const TerminalApp: React.FC = React.memo(() => {
       output: (
         <div className="space-y-2 mb-3 text-neutral-300">
           <p className="text-neutral-400">Last login: {new Date().toDateString()} on ttys001</p>
-          <div className="text-emerald-400 font-mono text-xs font-semibold leading-relaxed">
-            <pre className="text-cyan-400 select-none">
+          <div className="text-emerald-400 font-mono font-semibold leading-relaxed overflow-x-auto scrollbar-none">
+            <pre className="text-cyan-400 select-none text-[8px] sm:text-xs leading-none sm:leading-relaxed">
 {` _  __     _     _       ____            _            
 | |/ /_ __(_)___| |__   / ___|___   __| | ___  ___ 
 | ' /| '__| / __| '_ \\ | |   / _ \\ / _\` |/ _ \\/ __|
@@ -65,7 +65,7 @@ export const TerminalApp: React.FC = React.memo(() => {
         output = (
           <div className="space-y-1.5 text-xs text-neutral-300 font-mono py-1">
             <p className="text-yellow-400 font-semibold mb-1">Available Commands:</p>
-            <div className="grid grid-cols-[140px_1fr] gap-x-2 gap-y-1">
+            <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-x-2 gap-y-1">
               <span className="text-amber-400">leetcode</span>
               <span>Display verified LeetCode stats (217 Solved, C++, Badges)</span>
 
@@ -453,8 +453,8 @@ export const TerminalApp: React.FC = React.memo(() => {
         ))}
 
         {/* Active Command Input Line */}
-        <div className="flex items-center gap-2 text-xs mt-1">
-          <span className="text-emerald-400 font-semibold select-none">krish@macbook:~$</span>
+        <div className="flex items-center gap-1.5 sm:gap-2 text-xs mt-1">
+          <span className="text-emerald-400 font-semibold select-none text-[11px] sm:text-xs">krish@macbook:~$</span>
           <input
             ref={inputRef}
             type="text"
@@ -462,12 +462,26 @@ export const TerminalApp: React.FC = React.memo(() => {
             onChange={(e) => setInputVal(e.target.value)}
             onKeyDown={handleKeyDown}
             autoFocus
-            className="flex-1 bg-transparent text-white focus:outline-none border-none p-0 font-mono caret-emerald-400"
+            className="flex-1 bg-transparent text-white focus:outline-none border-none p-0 font-mono caret-emerald-400 text-[11px] sm:text-xs"
             spellCheck={false}
             autoComplete="off"
           />
         </div>
         <div ref={bottomRef} />
+      </div>
+
+      {/* Quick Command Pills for 1-Tap execution on mobile / desktop */}
+      <div className="flex overflow-x-auto gap-1.5 p-2 bg-neutral-900/90 border-t border-white/10 select-none scrollbar-none flex-shrink-0">
+        <span className="text-[10px] text-neutral-400 uppercase font-mono self-center mr-1 hidden sm:inline">Quick:</span>
+        {["help", "projects", "leetcode", "github", "certs", "skills", "about", "clear"].map((cmd) => (
+          <button
+            key={cmd}
+            onClick={() => handleCommand(cmd)}
+            className="px-2.5 py-1 rounded bg-white/10 hover:bg-emerald-600/30 hover:text-emerald-300 text-neutral-300 font-mono text-[11px] whitespace-nowrap transition-colors border border-white/10 active:scale-95 cursor-pointer"
+          >
+            {cmd}
+          </button>
+        ))}
       </div>
     </WindowFrame>
   );
